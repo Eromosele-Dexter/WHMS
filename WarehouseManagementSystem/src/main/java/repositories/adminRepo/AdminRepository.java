@@ -1,0 +1,168 @@
+package repositories.adminRepo;
+
+import databaseConnectors.IDatabaseConnector;
+import models.Administrator;
+import statics.DbConfig;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static statics.DbQueries.*;
+
+public class AdminRepository implements IAdminRepository{
+
+
+
+
+    private IDatabaseConnector adminDbContext;
+    private static Connection adminDb;
+    private String adminTable;
+
+    // TODO: connect to database and inject to database
+    public AdminRepository(IDatabaseConnector adminDbContext){
+        this.adminDbContext = adminDbContext;
+        adminDb = adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
+    }
+
+
+
+    /**
+     * @param administrator
+     * @return administrator if successfully created else returns null
+     */
+
+    public Administrator createAdministrator(Administrator administrator) {
+        int adminCount = getAdminCount();
+
+        if(adminCount  >= 1)
+            return null;
+
+        int rowsInserted = addAdmin(administrator);
+
+        return rowsInserted > 0 ? administrator:null;
+    }
+
+
+    /**
+     * @return current administrator else returns null if admin does not exist.
+     */
+
+    public Administrator getAdministrator() {
+        return getAdmin();
+    }
+
+    /**
+     * Deletes current administrator
+     */
+    @Override
+    public void deleteCurrentAdministrator() {
+        this.deleteCurrentAdmin();
+    }
+
+    private int getAdminCount() {
+        Statement statement;
+        int adminCount = 0;
+
+        try {
+            this.adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
+
+            statement = adminDb.createStatement();
+
+            ResultSet resultSet = statement.executeQuery(COUNT_ADMIN_QUERY );
+
+            if (resultSet.next()) {
+                adminCount = resultSet.getInt(1); // Get the count from the first column
+            }
+            adminDbContext.disconnect();
+
+        } catch (SQLException e) {
+            System.out.println("Error Counting Admin.");
+            throw new RuntimeException(e);
+        }
+        return adminCount;
+    }
+
+    private Administrator getAdmin(){
+        Administrator administrator = null;
+        try {
+            this.adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
+
+            String selectSQL = "SELECT * FROM " + ADMIN_TABLE + " ORDER BY id LIMIT 1";
+
+            PreparedStatement preparedStatement = adminDb.prepareStatement(selectSQL);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+
+            if (resultSet.next()) {
+                // Retrieve data from the first entry
+
+                String username = resultSet.getString("username");
+
+                String password = resultSet.getString("password");
+
+                administrator = new Administrator(username,password);
+
+            }
+
+            preparedStatement.close();
+
+            adminDbContext.disconnect();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return administrator;
+    }
+
+    private int addAdmin(Administrator administrator) {
+        int rowsInserted = 0;
+        try {
+            this.adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
+
+            PreparedStatement preparedStatement = adminDb.prepareStatement(ADD_ADMIN_QUERY);
+
+            preparedStatement.setString(1, administrator.getUsername());
+
+            preparedStatement.setString(2, administrator.getPassword());
+
+            rowsInserted  = preparedStatement.executeUpdate();
+
+            if (rowsInserted <= 0) {
+                System.out.println("Failed to insert an admin.");
+            }
+
+            preparedStatement.close();
+
+            adminDbContext.disconnect();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return rowsInserted;
+    }
+
+    private void deleteCurrentAdmin(){
+        try {
+            this.adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
+
+            String deleteSQL = "DELETE FROM " + ADMIN_TABLE+ " WHERE id = (SELECT MIN(id) FROM " + ADMIN_TABLE + ")";
+
+            PreparedStatement preparedStatement = adminDb.prepareStatement(deleteSQL);
+
+            int rowsDeleted = preparedStatement.executeUpdate();
+
+            if (rowsDeleted > 0) {
+                System.out.println("The first entry has been deleted.");
+            } else {
+                System.out.println("No entries were deleted (the table may be empty).");
+            }
+
+            preparedStatement.close();
+
+            adminDbContext.disconnect();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
