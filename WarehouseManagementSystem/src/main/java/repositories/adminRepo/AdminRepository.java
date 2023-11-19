@@ -22,7 +22,7 @@ public class AdminRepository implements IAdminRepository{
     // TODO: connect to database and inject to database
     public AdminRepository(IDatabaseConnector adminDbContext){
         this.adminDbContext = adminDbContext;
-        adminDb = adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
+        this.adminDb = adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
     }
 
 
@@ -35,8 +35,10 @@ public class AdminRepository implements IAdminRepository{
     public Administrator createAdministrator(Administrator administrator) {
         int adminCount = getAdminCount();
 
+
         if(adminCount  >= 1)
             return null;
+
 
         int rowsInserted = addAdmin(administrator);
 
@@ -65,18 +67,19 @@ public class AdminRepository implements IAdminRepository{
         int adminCount = 0;
 
         try {
-            this.adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
 
             statement = adminDb.createStatement();
 
-            ResultSet resultSet = statement.executeQuery(COUNT_ADMIN_QUERY );
+            ResultSet resultSet = statement.executeQuery(COUNT_ADMIN_QUERY);
 
             if (resultSet.next()) {
                 adminCount = resultSet.getInt(1); // Get the count from the first column
             }
+
             adminDbContext.disconnect();
 
         } catch (SQLException e) {
+            adminDbContext.disconnect();
             System.out.println("Error Counting Admin.");
             throw new RuntimeException(e);
         }
@@ -86,7 +89,6 @@ public class AdminRepository implements IAdminRepository{
     private Administrator getAdmin(){
         Administrator administrator = null;
         try {
-            this.adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
 
             String selectSQL = "SELECT * FROM " + ADMIN_TABLE + " ORDER BY id LIMIT 1";
 
@@ -110,6 +112,7 @@ public class AdminRepository implements IAdminRepository{
 
             adminDbContext.disconnect();
         } catch (SQLException e) {
+            adminDbContext.disconnect();
             e.printStackTrace();
         }
         return administrator;
@@ -118,7 +121,6 @@ public class AdminRepository implements IAdminRepository{
     private int addAdmin(Administrator administrator) {
         int rowsInserted = 0;
         try {
-            this.adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
 
             PreparedStatement preparedStatement = adminDb.prepareStatement(ADD_ADMIN_QUERY);
 
@@ -137,6 +139,7 @@ public class AdminRepository implements IAdminRepository{
             adminDbContext.disconnect();
 
         } catch (SQLException e) {
+            adminDbContext.disconnect();
             throw new RuntimeException(e);
         }
         return rowsInserted;
@@ -144,7 +147,6 @@ public class AdminRepository implements IAdminRepository{
 
     private void deleteCurrentAdmin(){
         try {
-            this.adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
 
             String deleteSQL = "DELETE FROM " + ADMIN_TABLE+ " WHERE id = (SELECT MIN(id) FROM " + ADMIN_TABLE + ")";
 
@@ -162,6 +164,7 @@ public class AdminRepository implements IAdminRepository{
 
             adminDbContext.disconnect();
         } catch (SQLException e) {
+            adminDbContext.disconnect();
             e.printStackTrace();
         }
     }

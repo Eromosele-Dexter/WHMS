@@ -26,9 +26,9 @@ public class AdminService {
 
         Administrator newAdministrator = new Administrator(username,password);
 
-        this.adminRepository.createAdministrator(newAdministrator);
+        Administrator createdAdmin = this.adminRepository.createAdministrator(newAdministrator);
 
-        return new RegisterAdminResponse(username);
+        return createdAdmin == null ? null: new RegisterAdminResponse(createdAdmin.getUsername());
     }
 
     public LoginAdminResponse handleAdminLogin(LoginAdminRequest loginAdminRequest){

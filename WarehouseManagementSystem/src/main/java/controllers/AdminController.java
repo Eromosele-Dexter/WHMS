@@ -6,6 +6,7 @@ import apiContracts.Responses.LoginAdminResponse;
 import apiContracts.Responses.RegisterAdminResponse;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import databaseConnectors.SQLiteDbConnector;
 import repositories.adminRepo.AdminRepository;
 import services.AdminService;
 import statics.HttpMethods;
@@ -21,7 +22,7 @@ public class AdminController implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        AdminService adminService = new AdminService(new AdminRepository());
+        AdminService adminService = new AdminService(new AdminRepository(new SQLiteDbConnector()));
 
         String json = JsonUtils.readJsonFromBody(exchange);
 

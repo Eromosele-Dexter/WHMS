@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class SQLiteDbConnector implements IDatabaseConnector{
 
-    private Connection connection = null;
+    private Connection connection = null; // TODO: Make singleton instance
     /**
      * @return SQLite connection
      */
