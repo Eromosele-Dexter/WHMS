@@ -16,10 +16,12 @@ public class Server {
         // Context for handling requests
         server.createContext(Endpoints.PRODUCT_ENDPOINT, new ProductController());
 
-        server.createContext(Endpoints.ADMIN_ENDPOINT, new AdminController());
+        server.createContext(Endpoints.ADMIN_ENDPOINT, new AdminController(server));
 
         server.setExecutor(null); // Use the default executor
 
         server.start();
+
+
     }
 }

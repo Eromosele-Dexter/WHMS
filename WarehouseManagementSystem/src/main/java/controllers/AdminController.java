@@ -6,6 +6,7 @@ import apiContracts.Responses.LoginAdminResponse;
 import apiContracts.Responses.RegisterAdminResponse;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 import databaseConnectors.SQLiteDbConnector;
 import repositories.adminRepo.AdminRepository;
 import services.AdminService;
@@ -19,7 +20,10 @@ import java.io.IOException;
 
 public class AdminController implements HttpHandler {
 
-
+    HttpServer server;
+    public AdminController(HttpServer server){
+        this.server = server;
+    }
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         AdminService adminService = new AdminService(new AdminRepository(new SQLiteDbConnector()));
@@ -40,8 +44,10 @@ public class AdminController implements HttpHandler {
                     LoginAdminResponse response = adminService.handleAdminLogin(request);
 
 
-                    if (response == null)
+                    if (response == null) {
                         new HttpResponse(exchange, "Error Logging In Administrator.", StatusCodes.BAD_REQUEST);
+                        server.stop(3);
+                    }
                     else
                         new HttpResponse(exchange, response, StatusCodes.OK);
                 }
@@ -61,6 +67,8 @@ public class AdminController implements HttpHandler {
                 break;
 
             case HttpMethods.GET:
+
+
                 break;
 
             case HttpMethods.DELETE:

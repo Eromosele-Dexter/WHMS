@@ -1,37 +1,16 @@
-package models;
+package apiContracts.Requests;
 
-public abstract class Product {
-    protected int productId;
-    protected String productName;
-    protected int currentStockQuantity;
-    protected double unitPrice;
-    protected int targetMaxStockQuantity;
-    protected int targetMinStockQuantity;
-    protected int restockSchedule;
-    protected int discountStrategyId;
+public class AddProductRequest extends Request{
 
-    protected String productType;
+    private String productName;
+    private int currentStockQuantity;
+    private double unitPrice;
+    private int targetMaxStockQuantity;
+    private int targetMinStockQuantity;
+    private int restockSchedule;
+    private int discountStrategyId;
+    private String productType;
 
-
-
-    public Product(String productName, double unitPrice, int currentStockQuantity, int targetMaxStockQuantity, int targetMinStockQuantity, int restockSchedule, int discountStrategyId, String productType) {
-        this.productName = productName;
-        this.currentStockQuantity = currentStockQuantity;
-        this.unitPrice = unitPrice;
-        this.targetMaxStockQuantity = targetMaxStockQuantity;
-        this.targetMinStockQuantity = targetMinStockQuantity;
-        this.restockSchedule = restockSchedule;
-        this.discountStrategyId = discountStrategyId;
-        this.productType = productType.toLowerCase();
-    }
-
-    public int getProductId() {
-        return productId;
-    }
-
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
 
     public String getProductName() {
         return productName;
@@ -90,12 +69,10 @@ public abstract class Product {
     }
 
     public String getProductType() {
-        return productType.toLowerCase();
+        return productType;
     }
 
     public void setProductType(String productType) {
-        this.productType = productType.toLowerCase();
+        this.productType = productType;
     }
-
-    //    public abstract String getProductState();
 }

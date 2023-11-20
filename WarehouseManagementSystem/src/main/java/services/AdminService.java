@@ -45,7 +45,7 @@ public class AdminService {
 
         if(isValidUsername && isValidPassword ) {
 
-            return new LoginAdminResponse(username);
+            return new LoginAdminResponse(username, currentAdmin.getId());
         }
 
         return null;

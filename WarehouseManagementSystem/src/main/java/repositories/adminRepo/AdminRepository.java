@@ -13,13 +13,10 @@ import static statics.DbQueries.*;
 public class AdminRepository implements IAdminRepository{
 
 
-
-
     private IDatabaseConnector adminDbContext;
     private static Connection adminDb;
-    private String adminTable;
 
-    // TODO: connect to database and inject to database
+
     public AdminRepository(IDatabaseConnector adminDbContext){
         this.adminDbContext = adminDbContext;
         this.adminDb = adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
@@ -100,12 +97,15 @@ public class AdminRepository implements IAdminRepository{
             if (resultSet.next()) {
                 // Retrieve data from the first entry
 
+                int adminId = resultSet.getInt("id");
+
                 String username = resultSet.getString("username");
 
                 String password = resultSet.getString("password");
 
                 administrator = new Administrator(username,password);
 
+                administrator.setId(adminId);
             }
 
             preparedStatement.close();
