@@ -19,13 +19,14 @@ import utils.HttpResponse;
 import utils.JsonUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ProductController implements HttpHandler {
 
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        ProductService productService = new ProductService(new ProductRepository(new SQLiteDbConnector()));
+        ProductService productService = new ProductService(new ProductRepository(SQLiteDbConnector.getInstance()));
 
         String json = JsonUtils.readJsonFromBody(exchange);
 
@@ -56,6 +57,12 @@ public class ProductController implements HttpHandler {
             case HttpMethods.GET:
 
                 if((Endpoints.PRODUCT_ENDPOINT+ "/").equals(requestURI)){
+
+                    List<GetProductResponse> response = productService.handleRetrieveAllProducts();
+
+                    new HttpResponse(exchange, response, StatusCodes.OK);
+                }
+                else if((Endpoints.PRODUCT_ENDPOINT+ "/product").equals(requestURI)){
 
                     GetProductRequest request = (GetProductRequest) JsonUtils.mapJsonToRequest(json, new GetProductRequest());
 

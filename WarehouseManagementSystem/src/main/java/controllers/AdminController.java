@@ -26,7 +26,7 @@ public class AdminController implements HttpHandler {
     }
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        AdminService adminService = new AdminService(new AdminRepository(new SQLiteDbConnector()));
+        AdminService adminService = new AdminService(new AdminRepository(SQLiteDbConnector.getInstance()));
 
         String json = JsonUtils.readJsonFromBody(exchange);
 

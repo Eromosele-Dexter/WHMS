@@ -6,11 +6,14 @@ import apiContracts.Responses.AddProductResponse;
 import apiContracts.Responses.GetProductResponse;
 import factories.productFactories.ElectronicFactory;
 import factories.productFactories.FurnitureFactory;
+import factories.productFactories.GeneralFactory;
 import factories.productFactories.ProductFactory;
 import models.Product;
 import repositories.productRepo.IProductRepository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ProductService {
@@ -26,7 +29,7 @@ public class ProductService {
 
         productsFactoryMap.put("electronic", new ElectronicFactory());
         productsFactoryMap.put("furniture", new FurnitureFactory());
-        productsFactoryMap.put("general", new FurnitureFactory());
+        productsFactoryMap.put("general", new GeneralFactory());
 
     }
 
@@ -46,9 +49,17 @@ public class ProductService {
 
         int discountStrategyId = addProductRequest.getDiscountStrategyId();
 
-        String productType  = addProductRequest.getProductType();
+        String productType  = addProductRequest.getProductType().toLowerCase().trim();
 
-        ProductFactory productFactory = this.productsFactoryMap.get(productType.toLowerCase());
+        ProductFactory factory = this.productsFactoryMap.get(productType);
+
+        ProductFactory productFactory;
+
+        if(factory == null)
+            productFactory = this.productsFactoryMap.get("general");
+        else
+            productFactory = factory;
+
 
         Product product = productFactory.createProduct(productName, unitPrice, currentStockQuantity, targetMaxStockQuantity, targetMinStockQuantity, restockSchedule, discountStrategyId, productType);
 
@@ -58,6 +69,24 @@ public class ProductService {
                 createdProduct.getUnitPrice(), createdProduct.getCurrentStockQuantity(), createdProduct.getTargetMaxStockQuantity(),
                 createdProduct.getTargetMinStockQuantity(), createdProduct.getRestockSchedule(), createdProduct.getDiscountStrategyId(),
                 createdProduct.getProductType());
+    }
+
+    public List<GetProductResponse>handleRetrieveAllProducts(){
+        List<GetProductResponse> productsList = new ArrayList<>();
+
+        List<Product>products = this.productRepository.getAllProducts();
+
+        for(int i=0; i<products.size(); i++){
+            Product product = products.get(i);
+
+            GetProductResponse getProductResponse = new GetProductResponse(product.getProductId(), product.getProductName(), product.getUnitPrice(),
+                    product.getCurrentStockQuantity(), product.getTargetMaxStockQuantity(), product.getTargetMinStockQuantity(),
+                    product.getRestockSchedule(), product.getDiscountStrategyId(), product.getProductType());
+
+            productsList.add(getProductResponse);
+        }
+
+        return productsList;
     }
 
     public GetProductResponse handleRetrieveProduct(GetProductRequest getProductRequest){
@@ -77,4 +106,15 @@ public class ProductService {
                 product.getCurrentStockQuantity(), product.getTargetMaxStockQuantity(), product.getTargetMinStockQuantity(),
                 product.getRestockSchedule(), product.getDiscountStrategyId(), product.getProductType());
     }
+
+    public Product handleGetProduct(String name){
+        return this.productRepository.getProductByName(name);
+    }
+
+    public void handleUpdateProduct(Product updatedProduct, int id){
+        updatedProduct.setProductId(id);
+
+        this.productRepository.updateProduct(updatedProduct);
+    }
+
 }
