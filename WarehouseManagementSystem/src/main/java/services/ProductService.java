@@ -117,4 +117,7 @@ public class ProductService {
         this.productRepository.updateProduct(updatedProduct);
     }
 
+    public Map<String, ProductFactory> getProductsFactoryMap() {
+        return productsFactoryMap;
+    }
 }

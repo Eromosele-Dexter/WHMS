@@ -4,10 +4,14 @@ import apiContracts.Requests.PlaceOrderRequest;
 import apiContracts.Responses.PlaceOrderResponse;
 import models.Order;
 import models.Product;
+import productStates.LowStockState;
+import productStates.RegularStockState;
+import productStates.RestockingToFulfillOrderState;
 import strategies.pricing.PricingStrategy;
 import strategies.pricing.PricingStrategy001;
 import strategies.pricing.PricingStrategy002;
 import strategies.restock.IRestockOperationStrategy;
+import strategies.restock.RestockByLabour;
 import strategies.restock.RestockByMachine;
 
 import java.util.*;
@@ -25,11 +29,16 @@ public class OrderService {
 
     private List<PricingStrategy> pricingStrategies;
 
+    private List<IRestockOperationStrategy> restockOperationStrategies;
+
     public OrderService(ProductService productService) {
         this.productService = productService;
         this.pricingStrategies = new ArrayList<>();
+        this.restockOperationStrategies = new ArrayList<>();
         this.pricingStrategies.add(new PricingStrategy001());
         this.pricingStrategies.add(new PricingStrategy002());
+        this.restockOperationStrategies.add(new RestockByMachine());
+        this.restockOperationStrategies.add(new RestockByLabour());
     }
 
 
@@ -39,8 +48,11 @@ public class OrderService {
         Product orderedProduct = this.productService.handleGetProduct(placedOrder.getProductName());
 
         if(placedOrder.getQuantity() > orderedProduct.getTargetMaxStockQuantity()){
-            PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse(placedOrder,
-                    "Order exceeds the max quantity set for this product: "+ placedOrder.getProductName() + " and cannot be processed");
+
+            PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse(placedOrder,"");
+
+            sendMessage("Order exceeds the max quantity set for this product: "+ placedOrder.getProductName() + " and cannot be processed");
+
             return placeOrderResponse;
         }
 
@@ -53,7 +65,6 @@ public class OrderService {
 
         Order placedOrder = orders.poll();
 
-
         Product orderedProduct = this.productService.handleGetProduct(placedOrder.getProductName());
 
         PlaceOrderResponse placeOrderResponse = null;
@@ -64,15 +75,16 @@ public class OrderService {
         String restockingOperationCompletedMessage = String.format("Restocking Operation for Product %s completed",
                 placedOrder.getProductName());
 
-        if(placedOrder.getQuantity() > orderedProduct.getCurrentStockQuantity()) {
+        int randomRestockStrategyIndex = getRandomNumber(0, this.restockOperationStrategies.size()-1);
 
-            restockStrategy = new RestockByMachine();
+        restockStrategy = this.restockOperationStrategies.get(randomRestockStrategyIndex);
+
+        if(placedOrder.getQuantity() > orderedProduct.getCurrentStockQuantity()) {
 
             int currentQuantity = orderedProduct.getCurrentStockQuantity();
 
             int quantityRequested = placedOrder.getQuantity();
 
-            orderedProduct.setCurrentStockQuantity(currentQuantity - quantityRequested);
 
             String orderExceedsAvailableMessage = String.format("Order for Product %s Quantity %d is  pending – order exceeds available quantity",
                     placedOrder.getProductName(), quantityRequested);
@@ -81,9 +93,11 @@ public class OrderService {
 
             sendMessage(restockingOperationInitiatedMessage);
 
-            restockStrategy.restock(orderedProduct);
+            restockStrategy.restock(this.productService, orderedProduct);
 
             sendMessage(restockingOperationCompletedMessage);
+
+            orderedProduct.setCurrentStockQuantity(currentQuantity - quantityRequested);
 
             placeOrderResponse =   new PlaceOrderResponse(placedOrder, "");
         }
@@ -91,8 +105,6 @@ public class OrderService {
         this.productService.handleUpdateProduct(orderedProduct, orderedProduct.getProductId());
 
         processOrder();
-
-        setProductState(orderedProduct,"fulfilled");
 
         int randomPricingStrategyIndex = getRandomNumber(0, this.pricingStrategies.size()-1);
 
@@ -109,9 +121,10 @@ public class OrderService {
 
         if(productAfterFulfilled.getCurrentStockQuantity() < productAfterFulfilled.getTargetMinStockQuantity()) {
 
-            setProductState(productAfterFulfilled, "low stock");
+            productAfterFulfilled.setState(new LowStockState());
 
             restockAfterFulfilled(productAfterFulfilled);
+
         }
 
         return placeOrderResponse;
@@ -122,6 +135,7 @@ public class OrderService {
 
         delayFunction(processingTime);
     }
+
     private void delayFunction(int seconds) {
         try {
             // Delay for the specified number of seconds
@@ -145,10 +159,6 @@ public class OrderService {
 
     }
 
-    private void setProductState(Product product, String state){
-
-    }
-
     private void restockAfterFulfilled(Product product){
         String restockingOperationInitiatedMessage = String.format("Restocking Operation for Product %s initiated",
                 product.getProductName());
@@ -158,10 +168,13 @@ public class OrderService {
 
         sendMessage(restockingOperationInitiatedMessage);
 
-        restockStrategy.restock(product);
+        product.setState(new RestockingToFulfillOrderState());
+
+        restockStrategy.restock(this.productService, product);
 
         sendMessage(restockingOperationCompletedMessage);
 
+        product.setState(new RegularStockState());
 
     }
 

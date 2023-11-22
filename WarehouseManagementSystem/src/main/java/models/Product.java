@@ -1,5 +1,8 @@
 package models;
 
+import productStates.RegularStockState;
+import productStates.State;
+
 public abstract class Product {
     protected int productId;
     protected String productName;
@@ -9,8 +12,8 @@ public abstract class Product {
     protected int targetMinStockQuantity;
     protected int restockSchedule;
     protected int discountStrategyId;
-
     protected String productType;
+    protected State state;
 
 
 
@@ -23,6 +26,7 @@ public abstract class Product {
         this.restockSchedule = restockSchedule;
         this.discountStrategyId = discountStrategyId;
         this.productType = productType.toLowerCase();
+        this.state = new RegularStockState();
     }
 
     public int getProductId() {
@@ -97,5 +101,11 @@ public abstract class Product {
         this.productType = productType.toLowerCase();
     }
 
-    //    public abstract String getProductState();
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
 }

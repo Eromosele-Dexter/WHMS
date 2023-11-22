@@ -1,7 +1,8 @@
 package strategies.restock;
 
 import models.Product;
+import services.ProductService;
 
 public interface IRestockOperationStrategy {
-    public Product restock(Product product);
+    public void restock(ProductService productService, Product product);
 }
