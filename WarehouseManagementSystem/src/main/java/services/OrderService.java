@@ -65,7 +65,7 @@ public class OrderService {
 
         if(placedOrder.getQuantity() > orderedProduct.getTargetMaxStockQuantity()){
 
-            PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse(placedOrder,"");
+            PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse(placedOrder,"o");
 
             sendMessage("Order exceeds the max quantity set for this product: "+ placedOrder.getProductName() + " and cannot be processed");
 
@@ -101,11 +101,9 @@ public class OrderService {
 
         restockStrategy = this.restockOperationStrategies.get(randomRestockStrategyIndex);
 
+        int quantityRequested = placedOrder.getQuantity();
+
         if(placedOrder.getQuantity() > orderedProduct.getCurrentStockQuantity()) {
-
-            int currentQuantity = orderedProduct.getCurrentStockQuantity();
-
-            int quantityRequested = placedOrder.getQuantity();
 
 
             String orderExceedsAvailableMessage = String.format("Order for Product %s Quantity %d is  pending – order exceeds available quantity",
@@ -118,21 +116,21 @@ public class OrderService {
             restockStrategy.restock(this.productService, orderedProduct);
 
             sendMessage(restockingOperationCompletedMessage);
-
-            orderedProduct.setCurrentStockQuantity(currentQuantity - quantityRequested);
-
-            placeOrderResponse =   new PlaceOrderResponse(placedOrder, "");
         }
 
         System.out.println("3djdk");
 
-        orderedProduct.setCurrentStockQuantity(orderedProduct.getCurrentStockQuantity()-placedOrder.getQuantity());
+        int currentQuantity = this.productService.handleGetProduct(placedOrder.getProductName()).getCurrentStockQuantity();
+
+        System.out.println("quantity after first restock: " + currentQuantity);
+
+        orderedProduct.setCurrentStockQuantity(currentQuantity - quantityRequested);
 
         this.productService.handleUpdateProduct(orderedProduct, orderedProduct.getProductId());
 
         System.out.println("4djdk");
 
-//        processOrder();
+//        processOrder(); TODO: UNCOMMENT
 
         int randomPricingStrategyIndex = getRandomNumber(0, this.pricingStrategies.size()-1);
 
@@ -155,6 +153,8 @@ public class OrderService {
 
         Product productAfterFulfilled = this.productService.handleGetProduct(placedOrder.getProductName());
 
+        System.out.println("fulfilled product: " + productAfterFulfilled.getCurrentStockQuantity() );
+
         System.out.println("8djdk");
 
         if(productAfterFulfilled.getCurrentStockQuantity() < productAfterFulfilled.getTargetMinStockQuantity()) {
@@ -168,6 +168,8 @@ public class OrderService {
         System.out.println("9djdk");
 
         placeOrderResponse = new PlaceOrderResponse(placedOrder, "ok");
+
+        System.out.println("after fulfilled product: " + this.productService.handleGetProduct(placedOrder.getProductName()).getCurrentStockQuantity() );
 
         return placeOrderResponse;
     }
@@ -202,6 +204,9 @@ public class OrderService {
     }
 
     private void restockAfterFulfilled(Product product){
+
+        System.out.println("Restock after fulfilled");
+
         String restockingOperationInitiatedMessage = String.format("Restocking Operation for Product %s initiated",
                 product.getProductName());
 

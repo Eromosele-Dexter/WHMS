@@ -258,10 +258,12 @@ public  class ProductRepository implements IProductRepository{
     @Override
     public Product updateProduct(Product product) {
 
-        try {
+        Connection connect = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING);
 
-            PreparedStatement preparedStatement = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING)
-                    .prepareStatement(UPDATE_PRODUCT_QUERY);
+        try {
+            connect.setAutoCommit(false);
+
+            PreparedStatement preparedStatement = connect.prepareStatement(UPDATE_PRODUCT_QUERY);
 
             preparedStatement.setString(1, product.getProductName());
 
@@ -281,8 +283,11 @@ public  class ProductRepository implements IProductRepository{
 
             preparedStatement.executeUpdate();
 
+            connect.commit();
 
             preparedStatement.close();
+
+            connect.setAutoCommit(true);
 
             productDbContext.disconnect();
 
@@ -291,6 +296,7 @@ public  class ProductRepository implements IProductRepository{
             productDbContext.disconnect();
             throw new RuntimeException(e);
         }
+
         return product;
     }
 
