@@ -49,6 +49,8 @@ public class OrderController implements HttpHandler {
 
                     String cookie = SessionUtils.getClientCookie(exchange);
 
+                    System.out.println("Cookie: " + cookie);
+
                     if(cookie == null)
                         SessionUtils.setClientCookie(exchange);
 

@@ -26,7 +26,11 @@ public class ProductController implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+
+
         ProductService productService = new ProductService(new ProductRepository(SQLiteDbConnector.getInstance()));
+
+
 
         String json = JsonUtils.readJsonFromBody(exchange);
 
@@ -34,29 +38,37 @@ public class ProductController implements HttpHandler {
 
         String requestURI = exchange.getRequestURI().getPath();
 
+
+
         switch(httpRequestMethod){
             case HttpMethods.POST:
 
                 if ((Endpoints.PRODUCT_ENDPOINT+ "/create").equals(requestURI)) {
 
+
+
                     AddProductRequest request = (AddProductRequest) JsonUtils.mapJsonToRequest(json, new AddProductRequest());
+
 
                     AddProductResponse response = productService.handleCreateProduct(request);
 
+                    System.out.println("Enter: " + response);
 
                     if (response == null) {
-                        new HttpResponse(exchange, "Error Creating Product. Product Type must be one of the following: " +
+                        new HttpResponse(exchange, "Error Creating Product Missing Request Params. Product Type must be one of the following: " +
                                 "| electronic | furniture | general |", StatusCodes.BAD_REQUEST);
                     }
                     else
                         new HttpResponse(exchange, response, StatusCodes.OK);
+                }else {
+                    new HttpResponse(exchange, "Unsupported Endpoint", StatusCodes.NOT_FOUND);
                 }
 
                 break;
 
             case HttpMethods.GET:
+                if((Endpoints.PRODUCT_ENDPOINT).equals(requestURI)){
 
-                if((Endpoints.PRODUCT_ENDPOINT+ "/").equals(requestURI)){
 
                     List<GetProductResponse> response = productService.handleRetrieveAllProducts();
 
@@ -72,6 +84,8 @@ public class ProductController implements HttpHandler {
                         new HttpResponse(exchange, "Error retrieving product with id" + request.getId(), StatusCodes.BAD_REQUEST);
                     else
                         new HttpResponse(exchange, response, StatusCodes.OK);
+                }else {
+                    new HttpResponse(exchange, "Unsupported Endpoint", StatusCodes.NOT_FOUND);
                 }
                 break;
 

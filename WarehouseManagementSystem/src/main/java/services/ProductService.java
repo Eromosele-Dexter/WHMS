@@ -25,19 +25,31 @@ public class ProductService {
 
     public ProductService(IProductRepository productRepository){
         this.productRepository = productRepository;
+
         productsFactoryMap = new HashMap<>();
 
         productsFactoryMap.put("electronic", new ElectronicFactory());
+
         productsFactoryMap.put("furniture", new FurnitureFactory());
+
         productsFactoryMap.put("general", new GeneralFactory());
 
     }
 
     public AddProductResponse handleCreateProduct(AddProductRequest addProductRequest){
 
+        if(addProductRequest.getProductName() == null){
+            return null;
+        }
+
+        if(addProductRequest.getProductType() == null){
+            addProductRequest.setProductType("general");
+        }
+
         String productName = addProductRequest.getProductName();
 
         double unitPrice = addProductRequest.getUnitPrice();
+
 
         int currentStockQuantity = addProductRequest.getCurrentStockQuantity();
 
@@ -51,19 +63,15 @@ public class ProductService {
 
         String productType  = addProductRequest.getProductType().toLowerCase().trim();
 
-        ProductFactory factory = this.productsFactoryMap.get(productType);
-
-        ProductFactory productFactory;
-
-        if(factory == null)
-            productFactory = this.productsFactoryMap.get("general");
-        else
-            productFactory = factory;
-
+        ProductFactory productFactory = this.productsFactoryMap.get(productType);
 
         Product product = productFactory.createProduct(productName, unitPrice, currentStockQuantity, targetMaxStockQuantity, targetMinStockQuantity, restockSchedule, discountStrategyId, productType);
 
+
+
         Product createdProduct = this.productRepository.addProduct(product);
+
+        System.out.println("looo");
 
         return createdProduct == null ? null : new AddProductResponse(createdProduct.getProductId(), createdProduct.getProductName(),
                 createdProduct.getUnitPrice(), createdProduct.getCurrentStockQuantity(), createdProduct.getTargetMaxStockQuantity(),
@@ -76,12 +84,16 @@ public class ProductService {
 
         List<Product>products = this.productRepository.getAllProducts();
 
+
+
         for(int i=0; i<products.size(); i++){
             Product product = products.get(i);
+
 
             GetProductResponse getProductResponse = new GetProductResponse(product.getProductId(), product.getProductName(), product.getUnitPrice(),
                     product.getCurrentStockQuantity(), product.getTargetMaxStockQuantity(), product.getTargetMinStockQuantity(),
                     product.getRestockSchedule(), product.getDiscountStrategyId(), product.getProductType());
+
 
             productsList.add(getProductResponse);
         }

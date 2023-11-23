@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,10 +27,15 @@ public  class ProductRepository implements IProductRepository{
 
     public ProductRepository(IDatabaseConnector productDbContext){
         this.productDbContext = productDbContext;
+
         this.productDb = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING);
 
+        productsFactoryMap = new HashMap<>();
+
         productsFactoryMap.put("electronic", new ElectronicFactory());
+
         productsFactoryMap.put("furniture", new FurnitureFactory());
+
         productsFactoryMap.put("general", new GeneralFactory());
 
     }
@@ -40,17 +46,21 @@ public  class ProductRepository implements IProductRepository{
      */
     @Override
     public Product addProduct(Product product) {
-
         // product with name already exists in db
         if(getProductByName(product.getProductName()) != null) {
             productDbContext.disconnect();
+            System.out.println("Product"  + product.getProductName() +"already exists");
             return null;
         }
 
         int rowsInserted = 0;
+
         try {
 
-            PreparedStatement preparedStatement = productDb.prepareStatement(ADD_PRODUCT_QUERY);
+            Connection p = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING);
+
+            PreparedStatement preparedStatement = p.prepareStatement("INSERT INTO products (name, current_stock_quantity, unit_price, target_max_quantity, target_min_quantity, restock_schedule, discount_strategy_id, product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
 
             preparedStatement.setString(1, product.getProductName());
 
@@ -68,6 +78,8 @@ public  class ProductRepository implements IProductRepository{
 
             preparedStatement.setString(8, product.getProductType());
 
+
+
             rowsInserted  = preparedStatement.executeUpdate();
 
             if (rowsInserted <= 0) {
@@ -78,7 +90,8 @@ public  class ProductRepository implements IProductRepository{
 
             productDbContext.disconnect();
 
-        } catch (SQLException e) {
+        } catch (SQLException e ) {
+            e.printStackTrace();
             productDbContext.disconnect();
             throw new RuntimeException(e);
         }
@@ -232,8 +245,9 @@ public  class ProductRepository implements IProductRepository{
 
             productDbContext.disconnect();
         } catch (SQLException e) {
-            productDbContext.disconnect();
             e.printStackTrace();
+            productDbContext.disconnect();
+            throw new RuntimeException(e);
         }
         return product;
     }

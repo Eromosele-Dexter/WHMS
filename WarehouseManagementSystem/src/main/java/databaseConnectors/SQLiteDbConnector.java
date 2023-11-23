@@ -62,6 +62,7 @@ public class SQLiteDbConnector implements IDatabaseConnector {
                 connection = null; // Ensure connection is set to null after closing
             }
         } catch (SQLException e) {
+            System.out.println("Disconnected from SQLite.");
             e.printStackTrace();
         }
     }

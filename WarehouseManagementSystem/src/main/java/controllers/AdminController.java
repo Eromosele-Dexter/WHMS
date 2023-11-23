@@ -46,7 +46,7 @@ public class AdminController implements HttpHandler {
 
                     if (response == null) {
                         new HttpResponse(exchange, "Error Logging In Administrator.", StatusCodes.BAD_REQUEST);
-                        server.stop(3);
+//                        server.stop(3);
                     }
                     else
                         new HttpResponse(exchange, response, StatusCodes.OK);

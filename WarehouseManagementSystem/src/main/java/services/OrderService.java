@@ -2,6 +2,7 @@ package services;
 
 import apiContracts.Requests.PlaceOrderRequest;
 import apiContracts.Responses.PlaceOrderResponse;
+import controllers.WebsocketController;
 import models.Order;
 import models.Product;
 import productStates.LowStockState;
@@ -14,8 +15,11 @@ import strategies.restock.IRestockOperationStrategy;
 import strategies.restock.RestockByLabour;
 import strategies.restock.RestockByMachine;
 
+import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static statics.Endpoints.WS_PORT;
 
 public class OrderService {
 
@@ -31,14 +35,26 @@ public class OrderService {
 
     private List<IRestockOperationStrategy> restockOperationStrategies;
 
+    private WebsocketController wsController;
+
     public OrderService(ProductService productService) {
         this.productService = productService;
+
         this.pricingStrategies = new ArrayList<>();
+
         this.restockOperationStrategies = new ArrayList<>();
+
         this.pricingStrategies.add(new PricingStrategy001());
+
         this.pricingStrategies.add(new PricingStrategy002());
+
         this.restockOperationStrategies.add(new RestockByMachine());
+
         this.restockOperationStrategies.add(new RestockByLabour());
+
+        InetSocketAddress address = new InetSocketAddress(WS_PORT);
+
+        wsController = WebsocketController.getInstance(address);
     }
 
 
@@ -156,7 +172,7 @@ public class OrderService {
     }
 
     private void sendMessage(String message, String client){
-
+        wsController.sendMessageToClient(message, client);
     }
 
     private void restockAfterFulfilled(Product product){

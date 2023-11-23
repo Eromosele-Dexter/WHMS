@@ -20,6 +20,7 @@ public class AdminRepository implements IAdminRepository{
     public AdminRepository(IDatabaseConnector adminDbContext){
         this.adminDbContext = adminDbContext;
         this.adminDb = adminDbContext.connect(DbConfig.ADMIN_DB_CONNECTION_STRING);
+
     }
 
 

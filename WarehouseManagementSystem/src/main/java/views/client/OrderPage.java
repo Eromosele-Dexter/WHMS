@@ -16,7 +16,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
 import static statics.Endpoints.GET_PRODUCTS_ENDPOINT;
 import static statics.Endpoints.PLACE_ORDER_ENDPOINT;
 
