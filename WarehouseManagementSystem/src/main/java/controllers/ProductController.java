@@ -2,11 +2,8 @@ package controllers;
 
 import apiContracts.Requests.AddProductRequest;
 import apiContracts.Requests.GetProductRequest;
-import apiContracts.Requests.RegisterAdminRequest;
 import apiContracts.Responses.AddProductResponse;
 import apiContracts.Responses.GetProductResponse;
-import apiContracts.Responses.LoginAdminResponse;
-import apiContracts.Responses.RegisterAdminResponse;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import databaseConnectors.SQLiteDbConnector;
@@ -17,19 +14,15 @@ import statics.HttpMethods;
 import statics.StatusCodes;
 import utils.HttpResponse;
 import utils.JsonUtils;
-
-import java.io.IOException;
 import java.util.List;
 
 public class ProductController implements HttpHandler {
 
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-
+    public void handle(HttpExchange exchange)  {
 
         ProductService productService = new ProductService(new ProductRepository(SQLiteDbConnector.getInstance()));
-
 
 
         String json = JsonUtils.readJsonFromBody(exchange);
@@ -52,7 +45,6 @@ public class ProductController implements HttpHandler {
 
                     AddProductResponse response = productService.handleCreateProduct(request);
 
-                    System.out.println("Enter: " + response);
 
                     if (response == null) {
                         new HttpResponse(exchange, "Error Creating Product Missing Request Params. Product Type must be one of the following: " +

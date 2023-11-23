@@ -57,9 +57,8 @@ public  class ProductRepository implements IProductRepository{
 
         try {
 
-            Connection p = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING);
-
-            PreparedStatement preparedStatement = p.prepareStatement("INSERT INTO products (name, current_stock_quantity, unit_price, target_max_quantity, target_min_quantity, restock_schedule, discount_strategy_id, product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            PreparedStatement preparedStatement = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING)
+                    .prepareStatement(ADD_PRODUCT_QUERY);
 
 
             preparedStatement.setString(1, product.getProductName());
@@ -95,7 +94,7 @@ public  class ProductRepository implements IProductRepository{
             productDbContext.disconnect();
             throw new RuntimeException(e);
         }
-        return product;
+        return getProductByName(product.getProductName()) ;
     }
 
     /**
@@ -107,7 +106,7 @@ public  class ProductRepository implements IProductRepository{
             // Select all products
             String selectSQL = "SELECT * FROM " + PRODUCTS_TABLE;
 
-            PreparedStatement preparedStatement = productDb.prepareStatement(selectSQL);
+            PreparedStatement preparedStatement = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING).prepareStatement(selectSQL);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -152,7 +151,7 @@ public  class ProductRepository implements IProductRepository{
 
             String selectSQL = "SELECT * FROM " + PRODUCTS_TABLE + " WHERE id = " + id;
 
-            PreparedStatement preparedStatement = productDb.prepareStatement(selectSQL);
+            PreparedStatement preparedStatement = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING).prepareStatement(selectSQL);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -207,7 +206,7 @@ public  class ProductRepository implements IProductRepository{
 
             String selectSQL = "SELECT * FROM " + PRODUCTS_TABLE + " WHERE name = " + "'" + name + "'";
 
-            PreparedStatement preparedStatement = productDb.prepareStatement(selectSQL);
+            PreparedStatement preparedStatement = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING).prepareStatement(selectSQL);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -261,7 +260,8 @@ public  class ProductRepository implements IProductRepository{
 
         try {
 
-            PreparedStatement preparedStatement = productDb.prepareStatement(UPDATE_PRODUCT_QUERY);
+            PreparedStatement preparedStatement = productDbContext.connect(DbConfig.PRODUCTS_DB_CONNECTION_STRING)
+                    .prepareStatement(UPDATE_PRODUCT_QUERY);
 
             preparedStatement.setString(1, product.getProductName());
 
@@ -287,6 +287,7 @@ public  class ProductRepository implements IProductRepository{
             productDbContext.disconnect();
 
         } catch (SQLException e) {
+            e.printStackTrace();
             productDbContext.disconnect();
             throw new RuntimeException(e);
         }

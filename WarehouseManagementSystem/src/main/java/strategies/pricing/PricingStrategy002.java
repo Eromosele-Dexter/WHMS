@@ -5,8 +5,13 @@ import models.Product;
 
 public class PricingStrategy002 extends PricingStrategy{
 
+    private final int DISCOUNT_PERCENTAGE = 20;
     public final int REQUIRED_PURCHASE_PRICE_FOR_DISCOUNT = 1000;
 
+    public PricingStrategy002() {
+        this.id = 1;
+        this.discount = DISCOUNT_PERCENTAGE;
+    }
     /**
      * @param order
      * @param product
@@ -20,7 +25,7 @@ public class PricingStrategy002 extends PricingStrategy{
 
         double totalPrice = this.calculateTotalPrice(unitPrice, orderQuantity);
 
-        if(unitPrice >= REQUIRED_PURCHASE_PRICE_FOR_DISCOUNT ){
+        if(totalPrice >= REQUIRED_PURCHASE_PRICE_FOR_DISCOUNT ){
             totalPrice -= (totalPrice * this.discount/100);
         }
 

@@ -74,6 +74,8 @@ public class OrderService {
 
         orders.add(placedOrder);
 
+        System.out.println("order placed");
+
         return handleProcessOrder();
     }
 
@@ -81,7 +83,11 @@ public class OrderService {
 
         Order placedOrder = orders.poll();
 
+        System.out.println("1djdk");
+
         Product orderedProduct = this.productService.handleGetProduct(placedOrder.getProductName());
+
+        System.out.println("2djdk");
 
         PlaceOrderResponse placeOrderResponse = null;
 
@@ -118,22 +124,38 @@ public class OrderService {
             placeOrderResponse =   new PlaceOrderResponse(placedOrder, "");
         }
 
+        System.out.println("3djdk");
+
+        orderedProduct.setCurrentStockQuantity(orderedProduct.getCurrentStockQuantity()-placedOrder.getQuantity());
+
         this.productService.handleUpdateProduct(orderedProduct, orderedProduct.getProductId());
 
-        processOrder();
+        System.out.println("4djdk");
+
+//        processOrder();
 
         int randomPricingStrategyIndex = getRandomNumber(0, this.pricingStrategies.size()-1);
 
-        pricingStrategy = pricingStrategies.get(randomPricingStrategyIndex);
+        int discountStrategyId = orderedProduct.getDiscountStrategyId() > this.pricingStrategies.size()-1 ? randomPricingStrategyIndex : orderedProduct.getDiscountStrategyId();
+
+        pricingStrategy = pricingStrategies.get(discountStrategyId);
+
+        System.out.println("5djdk");
 
         double totalPrice = pricingStrategy.priceProduct(placedOrder, orderedProduct);
 
-        String orderFinalizedMessage = String.format("Order is finalized for Product %s and Quantity %d with total price %d",
+        System.out.println("6djdk");
+
+        String orderFinalizedMessage = String.format("Order is finalized for Product %s and Quantity %d with total price %.2f",
                 placedOrder.getProductName(), placedOrder.getQuantity(), totalPrice);
+
+        System.out.println("7djdk");
 
         sendMessage(orderFinalizedMessage);
 
         Product productAfterFulfilled = this.productService.handleGetProduct(placedOrder.getProductName());
+
+        System.out.println("8djdk");
 
         if(productAfterFulfilled.getCurrentStockQuantity() < productAfterFulfilled.getTargetMinStockQuantity()) {
 
@@ -142,6 +164,10 @@ public class OrderService {
             restockAfterFulfilled(productAfterFulfilled);
 
         }
+
+        System.out.println("9djdk");
+
+        placeOrderResponse = new PlaceOrderResponse(placedOrder, "ok");
 
         return placeOrderResponse;
     }
@@ -168,7 +194,7 @@ public class OrderService {
     }
 
     private void sendMessage(String message){
-
+        System.out.println(message);
     }
 
     private void sendMessage(String message, String client){
