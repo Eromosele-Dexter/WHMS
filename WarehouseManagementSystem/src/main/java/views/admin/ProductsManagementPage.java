@@ -32,7 +32,7 @@ public class ProductsManagementPage {
         // Create the chart
         JFreeChart barChart = ChartFactory.createBarChart(
                 "Warehouse Product Monitor System",
-                "Product",
+                "Products",
                 "Quantity",
                 dataset,
                 PlotOrientation.VERTICAL,
@@ -44,14 +44,17 @@ public class ProductsManagementPage {
         productsPanel.add(chartPanel, BorderLayout.WEST); // Add the chart to the left side
 
 
-        // Create the message board panel with dummy messages
+        // Create the message board panel
         JTextArea messageBoard = new JTextArea();
 
         messageBoard.setEditable(false); // Make the text area non-editable
+
         messageBoard.setText("Last Order\n=============\nProduct: Product2\nQuantity: 100\nTimestamp: 2023-10-02T12:26:53.06338\n\nCurrent Product Quantity in Warehouse\n=============\nProduct 1 ==> Quantity: 100\nProduct 2 ==> Quantity: 200\nProduct 3 ==> Quantity: 150\nProduct 4 ==> Quantity: 250\nProduct 5 ==> Quantity: 175");
+
         messageBoard.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JScrollPane scrollPane = new JScrollPane(messageBoard); // Allow scrolling
+
         scrollPane.setPreferredSize(new Dimension(400, 300)); // Set preferred size for the message board
 
         // Add the message board panel to the right side of the products panel

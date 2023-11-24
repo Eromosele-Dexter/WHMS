@@ -28,39 +28,6 @@ public class LoginPage {
         this.cardPanel = cardPanel;
     }
 
-//    JPanel createLoginPage() {
-//        JPanel loginPanel = new JPanel();
-//        loginPanel.setLayout(new GridBagLayout()); // Use GridBagLayout for more control
-//
-//        GridBagConstraints gbc = new GridBagConstraints();
-//        gbc.gridwidth = GridBagConstraints.REMAINDER;
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        gbc.insets = new Insets(10, 10, 10, 10); // Provides some padding
-//
-//        JLabel userLabel = new JLabel("Username:");
-//        JTextField userText = new JTextField();
-//        userText.setPreferredSize(new Dimension(100, 40)); // Set preferred size
-//
-//        JLabel passwordLabel = new JLabel("Password:");
-//        JPasswordField passwordText = new JPasswordField();
-//        passwordText.setPreferredSize(new Dimension(100, 40)); // Set preferred size
-//
-//        JButton loginButton = getLoginButton(userText, passwordText);
-//
-//        loginPanel.add(userLabel);
-//        loginPanel.add(userText);
-//        loginPanel.add(passwordLabel);
-//        loginPanel.add(passwordText);
-//        loginPanel.add(loginButton);
-//
-//        gbc.fill = GridBagConstraints.NONE; // Button should not stretch
-//        gbc.anchor = GridBagConstraints.CENTER; // Center the button
-//        loginPanel.add(loginButton, gbc);
-//
-//
-//        return loginPanel;
-//    }
-
     JPanel createLoginPage() {
         JPanel loginPanel = new JPanel();
         loginPanel.setLayout(new BoxLayout(loginPanel, BoxLayout.PAGE_AXIS));

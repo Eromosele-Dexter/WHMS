@@ -2,13 +2,7 @@ package views.admin;
 
 import javax.swing .*;
 import java.awt .*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Timer;
-import java.util.TimerTask;
+
 
 import static statics.ViewPages.*;
 

@@ -1,7 +1,12 @@
 package views.client;
 
+import views.admin.LoginPage;
+
 import javax.swing.*;
 import java.awt.*;
+
+import static statics.ViewPages.LOGIN_PAGE;
+import static statics.ViewPages.ORDER_PAGE;
 
 public class MainClientUI extends JFrame{
     private CardLayout cardLayout;
@@ -10,7 +15,7 @@ public class MainClientUI extends JFrame{
     public MainClientUI() {
         setTitle("Warehouse Management System - Client View");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 400);
+        setSize(900, 400);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
@@ -18,6 +23,10 @@ public class MainClientUI extends JFrame{
         cardPanel = new JPanel();
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
+
+        // Create and add the order page
+        OrderPage orderPage = new OrderPage(cardLayout,cardPanel);
+        cardPanel.add(orderPage.createOrderPage(), ORDER_PAGE);
 
 
         add(cardPanel, BorderLayout.CENTER);

@@ -20,6 +20,14 @@ import static statics.Endpoints.GET_PRODUCTS_ENDPOINT;
 import static statics.Endpoints.PLACE_ORDER_ENDPOINT;
 
 public class OrderPage {
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
+
+    public OrderPage(CardLayout cardLayout, JPanel cardPanel){
+        this.cardLayout = cardLayout;
+        this.cardPanel = cardPanel;
+    }
+
 
     private List<String> getProducts() {
         List<String> products = new ArrayList<>();
@@ -49,74 +57,46 @@ public class OrderPage {
         return products;
     }
 
+
     JPanel createOrderPage() {
         JPanel orderPanel = new JPanel();
 
-        orderPanel.setLayout(new GridLayout(3, 2));
+        orderPanel.setLayout(new BorderLayout());
 
-        List<String> products = getProducts();
+        JPanel selectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JComboBox<String> productDropdown = new JComboBox<>(products.toArray(new String[0]));
+        JComboBox<String> productComboBox = new JComboBox<>(new String[]{"Product1", "Product2", "Product3", "Product4", "Product5"}); // Add your products here
 
-        Integer[] quantities = {1, 5, 10, 50, 100, 250, 300, 350, 400, 500, 1000};
+        selectionPanel.add(new JLabel("Step1 Choose Product: "));
 
-        JComboBox<Integer> quantityDropdown = new JComboBox<>(quantities);
+        selectionPanel.add(productComboBox);
 
-        JButton orderButton = new JButton("Choose");
+        JComboBox<Integer> quantityComboBox = new JComboBox<>(new Integer[]{50, 100, 150, 200});
 
-        JLabel orderStatus = new JLabel();
+        selectionPanel.add(new JLabel("Step2 Choose Quantity: "));
 
-        orderButton.addActionListener(new ActionListener() {
+        selectionPanel.add(quantityComboBox);
+
+        JButton chooseButton = new JButton("Choose");
+
+        chooseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String product = (String) productDropdown.getSelectedItem();
-
-                Integer quantity = (Integer) quantityDropdown.getSelectedItem();
-                try {
-                    URL url = new URL(PLACE_ORDER_ENDPOINT);
-
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-                    conn.setRequestMethod(HttpMethods.POST);
-
-                    conn.setDoOutput(true);
-
-                    String body = "product=" + product + "&quantity=" + quantity;
-
-                    OutputStream os = conn.getOutputStream();
-
-                    PrintStream ps = new PrintStream(os);
-
-                    ps.print(body);
-
-                    ps.close();
-
-                    if (conn.getResponseCode() == 200) {
-
-                        orderStatus.setText("Order received");
-
-                    } else {
-
-                        orderStatus.setText("Order failed");
-
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                // Logic to handle the order
             }
         });
+        selectionPanel.add(chooseButton);
 
-        orderPanel.add(new JLabel("Product:"));
+        orderPanel.add(selectionPanel, BorderLayout.NORTH);
 
-        orderPanel.add(productDropdown);
+        // Message board at the bottom
+        JTextArea orderDetailsTextArea = new JTextArea();
+        orderDetailsTextArea.setEditable(false); // Make text area non-editable
+        JScrollPane orderDetailsScrollPane = new JScrollPane(orderDetailsTextArea);
+        orderDetailsScrollPane.setBorder(BorderFactory.createTitledBorder("Order Details:"));
 
-        orderPanel.add(new JLabel("Quantity:"));
-
-        orderPanel.add(quantityDropdown);
-
-        orderPanel.add(orderButton);
-
-        orderPanel.add(orderStatus);
+        // Add message board to the bottom of the order panel
+        orderPanel.add(orderDetailsScrollPane, BorderLayout.CENTER);
 
         return orderPanel;
     }
