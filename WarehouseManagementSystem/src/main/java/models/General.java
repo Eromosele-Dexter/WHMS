@@ -10,9 +10,7 @@ public class General extends Product{
      * @returns product state
      */
 
-    // TODO: use state pattern
-
     public String getProductState() {
-        return "PRODUCT STATE TO BE IMPLEMENTED FURNITURE";
+        return this.getProductState();
     }
 }

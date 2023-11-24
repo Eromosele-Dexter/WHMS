@@ -83,11 +83,7 @@ public class OrderService {
 
         Order placedOrder = orders.poll();
 
-        System.out.println("1djdk");
-
         Product orderedProduct = this.productService.handleGetProduct(placedOrder.getProductName());
-
-        System.out.println("2djdk");
 
         PlaceOrderResponse placeOrderResponse = null;
 
@@ -105,7 +101,6 @@ public class OrderService {
 
         if(placedOrder.getQuantity() > orderedProduct.getCurrentStockQuantity()) {
 
-
             String orderExceedsAvailableMessage = String.format("Order for Product %s Quantity %d is  pending – order exceeds available quantity",
                     placedOrder.getProductName(), quantityRequested);
 
@@ -118,19 +113,13 @@ public class OrderService {
             sendMessage(restockingOperationCompletedMessage);
         }
 
-        System.out.println("3djdk");
-
         int currentQuantity = this.productService.handleGetProduct(placedOrder.getProductName()).getCurrentStockQuantity();
-
-        System.out.println("quantity after first restock: " + currentQuantity);
 
         orderedProduct.setCurrentStockQuantity(currentQuantity - quantityRequested);
 
         this.productService.handleUpdateProduct(orderedProduct, orderedProduct.getProductId());
 
-        System.out.println("4djdk");
-
-//        processOrder(); TODO: UNCOMMENT
+//        processOrder(); TODO: uncomment
 
         int randomPricingStrategyIndex = getRandomNumber(0, this.pricingStrategies.size()-1);
 
@@ -138,38 +127,25 @@ public class OrderService {
 
         pricingStrategy = pricingStrategies.get(discountStrategyId);
 
-        System.out.println("5djdk");
-
         double totalPrice = pricingStrategy.priceProduct(placedOrder, orderedProduct);
 
-        System.out.println("6djdk");
 
         String orderFinalizedMessage = String.format("Order is finalized for Product %s and Quantity %d with total price %.2f",
                 placedOrder.getProductName(), placedOrder.getQuantity(), totalPrice);
 
-        System.out.println("7djdk");
-
         sendMessage(orderFinalizedMessage);
 
         Product productAfterFulfilled = this.productService.handleGetProduct(placedOrder.getProductName());
-
-        System.out.println("fulfilled product: " + productAfterFulfilled.getCurrentStockQuantity() );
-
-        System.out.println("8djdk");
 
         if(productAfterFulfilled.getCurrentStockQuantity() < productAfterFulfilled.getTargetMinStockQuantity()) {
 
             productAfterFulfilled.setState(new LowStockState());
 
             restockAfterFulfilled(productAfterFulfilled);
-
         }
 
-        System.out.println("9djdk");
 
         placeOrderResponse = new PlaceOrderResponse(placedOrder, "ok");
-
-        System.out.println("after fulfilled product: " + this.productService.handleGetProduct(placedOrder.getProductName()).getCurrentStockQuantity() );
 
         return placeOrderResponse;
     }

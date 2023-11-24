@@ -10,9 +10,7 @@ public class Electronic extends Product{
      * @returns product state
      */
 
-    // TODO: use state pattern
-
     public String getProductState() {
-        return "PRODUCT STATE TO BE IMPLEMENTED ELECTRONICS";
+        return this.getProductState();
     }
 }

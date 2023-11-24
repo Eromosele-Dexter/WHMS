@@ -19,7 +19,7 @@ public class MainServerUI extends JFrame{
     public MainServerUI() {
         setTitle("Warehouse Management System - Admin View");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 400);
+        setSize(900, 400);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
 
@@ -42,7 +42,10 @@ public class MainServerUI extends JFrame{
 
         add(cardPanel, BorderLayout.CENTER);
 
+        setLocationRelativeTo(null);
         setVisible(true);
+
+
     }
 
     public static void main(String[] args) {
@@ -50,54 +53,11 @@ public class MainServerUI extends JFrame{
             new MainServerUI();
         });
 
-        // TODO: run server and clientUI, serverUI on different threads to avoid blocking issues
 
-//        final int POLL_INTERVAL = 5000; // 5 seconds
 
-//        Timer timer = new Timer();
-
-//        timer.schedule(new TimerTask() {
-//
-//            /**
-//             * When an object implementing interface {@code Runnable} is used
-//             * to create a thread, starting the thread causes the object's
-//             * {@code run} method to be called in that separately executing
-//             * thread.
-//             * <p>
-//             * The general contract of the method {@code run} is that it may
-//             * take any action whatsoever.
-//             *
-//             * @see Thread#run()
-//             */
-//
-//            /**
-//             * The action to be performed by this timer task.
-//             */
-//            @Override
-//            public void run() {
-//                try {
-//                    URL url = new URL("http://localhost:8080/check-order");
-//                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-//                    con.setRequestMethod("GET");
-//
-//                    int status = con.getResponseCode();
-//                    if (status == 200) {
-//                        InputStream is = con.getInputStream();
-//                        String lastOrder = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-//                        // Update the UI with this last order
-//                        System.out.println("Last Order: " + lastOrder);
-//                    }
-//
-//                    con.disconnect();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//
-//        }, 0, POLL_INTERVAL);
     }
 
+    // TODO: run server and clientUI, serverUI on different threads to avoid blocking issues
 
 }
 

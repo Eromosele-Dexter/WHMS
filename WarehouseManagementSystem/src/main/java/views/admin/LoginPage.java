@@ -28,67 +28,128 @@ public class LoginPage {
         this.cardPanel = cardPanel;
     }
 
+//    JPanel createLoginPage() {
+//        JPanel loginPanel = new JPanel();
+//        loginPanel.setLayout(new GridBagLayout()); // Use GridBagLayout for more control
+//
+//        GridBagConstraints gbc = new GridBagConstraints();
+//        gbc.gridwidth = GridBagConstraints.REMAINDER;
+//        gbc.fill = GridBagConstraints.HORIZONTAL;
+//        gbc.insets = new Insets(10, 10, 10, 10); // Provides some padding
+//
+//        JLabel userLabel = new JLabel("Username:");
+//        JTextField userText = new JTextField();
+//        userText.setPreferredSize(new Dimension(100, 40)); // Set preferred size
+//
+//        JLabel passwordLabel = new JLabel("Password:");
+//        JPasswordField passwordText = new JPasswordField();
+//        passwordText.setPreferredSize(new Dimension(100, 40)); // Set preferred size
+//
+//        JButton loginButton = getLoginButton(userText, passwordText);
+//
+//        loginPanel.add(userLabel);
+//        loginPanel.add(userText);
+//        loginPanel.add(passwordLabel);
+//        loginPanel.add(passwordText);
+//        loginPanel.add(loginButton);
+//
+//        gbc.fill = GridBagConstraints.NONE; // Button should not stretch
+//        gbc.anchor = GridBagConstraints.CENTER; // Center the button
+//        loginPanel.add(loginButton, gbc);
+//
+//
+//        return loginPanel;
+//    }
+
     JPanel createLoginPage() {
         JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(new BoxLayout(loginPanel, BoxLayout.PAGE_AXIS));
+        loginPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        loginPanel.setLayout(new GridLayout(3, 2));
-
+        // Components
         JLabel userLabel = new JLabel("Username:");
-
         JTextField userText = new JTextField();
+        userText.setMaximumSize(new Dimension(400, 40)); // Set max size
 
         JLabel passwordLabel = new JLabel("Password:");
-
         JPasswordField passwordText = new JPasswordField();
+        passwordText.setMaximumSize(new Dimension(400, 40)); // Set max size
 
+        JButton loginButton = getLoginButton(userText, passwordText);
+
+        // Add components to panel
+        loginPanel.add(userLabel);
+        loginPanel.add(Box.createRigidArea(new Dimension(0, 5))); // Spacer
+        loginPanel.add(userText);
+        loginPanel.add(Box.createRigidArea(new Dimension(0, 15))); // Spacer
+        loginPanel.add(passwordLabel);
+        loginPanel.add(Box.createRigidArea(new Dimension(0, 5))); // Spacer
+        loginPanel.add(passwordText);
+        loginPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Spacer
+        loginPanel.add(loginButton);
+
+
+        JPanel wrapperPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        wrapperPanel.add(loginPanel, gbc);
+
+        return wrapperPanel;
+    }
+
+    private JButton getLoginButton(JTextField userText, JPasswordField passwordText) {
         JButton loginButton = new JButton("Login");
-
+        loginButton.setMaximumSize(new Dimension(100, 40));
         loginButton.setBackground(Color.BLACK);
-
         loginButton.setForeground(Color.WHITE);
+        loginButton.setOpaque(true);
+        loginButton.setBorderPainted(false);
+
+
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String username = userText.getText();
-
-                String password = new String(passwordText.getPassword());
-
-                try {
-                    URL url = new URL(LOGIN_ENDPOINT);
-
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-                    conn.setRequestMethod("POST");
-
-                    conn.setDoOutput(true);
-
-                    String body = "username=" + username + "&password=" + password;
-
-                    OutputStream os = conn.getOutputStream();
-
-                    PrintStream ps = new PrintStream(os);
-
-                    ps.print(body);
-
-                    ps.close();
-
-                    if (conn.getResponseCode() == 200) {
-                        // If login is successful, switch to the Products Management page else server would automatically disconnect
-                        cardLayout.show(cardPanel, PRODUCT_MANAGEMENT_PAGE);
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+//                String username = userText.getText();
+//
+//                String password = new String(passwordText.getPassword());
+//
+//                try {
+//                    URL url = new URL(LOGIN_ENDPOINT);
+//
+//                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//
+//                    conn.setRequestMethod("POST");
+//
+//                    conn.setDoOutput(true);
+//
+//                    String body = "username=" + username + "&password=" + password;
+//
+//                    OutputStream os = conn.getOutputStream();
+//
+//                    PrintStream ps = new PrintStream(os);
+//
+//                    ps.print(body);
+//
+//                    ps.close();
+//
+//                    if (conn.getResponseCode() == 200) {
+//                        // If login is successful, switch to the Products Management page else server would automatically disconnect
+//                        cardLayout.show(cardPanel, PRODUCT_MANAGEMENT_PAGE);
+//                    }
+//                } catch (IOException ex) {
+//                    ex.printStackTrace();
+//                    System.out.println("ex: " +ex);
+//                }
+                System.out.println("pressed");
+                cardLayout.show(cardPanel,PRODUCT_MANAGEMENT_PAGE);
             }
         });
-
-        loginPanel.add(userLabel);
-        loginPanel.add(userText);
-        loginPanel.add(passwordLabel);
-        loginPanel.add(passwordText);
-        loginPanel.add(loginButton);
-
-        return loginPanel;
+        return loginButton;
     }
 }
 

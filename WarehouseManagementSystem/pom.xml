@@ -31,6 +31,19 @@
             <artifactId>Java-WebSocket</artifactId>
             <version>1.5.2</version>
         </dependency>
+        <!-- JFreeChart dependency -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version> <!-- Check for the latest version -->
+        </dependency>
+
+        <!-- JCommon dependency for JFreeChart -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jcommon</artifactId>
+            <version>1.0.24</version> <!-- Check for the latest version -->
+        </dependency>
 
     </dependencies>
     <repositories>
