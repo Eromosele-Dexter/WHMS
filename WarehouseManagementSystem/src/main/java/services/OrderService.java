@@ -65,7 +65,7 @@ public class OrderService {
 
         if(placedOrder.getQuantity() > orderedProduct.getTargetMaxStockQuantity()){
 
-            PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse(placedOrder,"o");
+            PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse(placedOrder,"Order processed.");
 
             sendMessage("Order exceeds the max quantity set for this product: "+ placedOrder.getProductName() + " and cannot be processed");
 
@@ -75,6 +75,8 @@ public class OrderService {
         orders.add(placedOrder);
 
         System.out.println("order placed");
+
+//        sendMessage("Hiii Admin");
 
         return handleProcessOrder();
     }
@@ -119,7 +121,7 @@ public class OrderService {
 
         this.productService.handleUpdateProduct(orderedProduct, orderedProduct.getProductId());
 
-//        processOrder(); TODO: uncomment
+//        processOrder();// TODO: uncomment
 
         int randomPricingStrategyIndex = getRandomNumber(0, this.pricingStrategies.size()-1);
 
@@ -173,6 +175,7 @@ public class OrderService {
 
     private void sendMessage(String message){
         System.out.println(message);
+        wsController.sendMessageToClient(message, "admin");
     }
 
     private void sendMessage(String message, String client){

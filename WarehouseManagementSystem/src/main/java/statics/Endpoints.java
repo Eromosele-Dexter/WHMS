@@ -11,9 +11,11 @@ public class Endpoints {
     public static final String ORDER_ENDPOINT = "/orders";
 
 
-    public static final String LOGIN_ENDPOINT = "localhost:8080/admin/login";
+    public static final String LOGIN_ENDPOINT = "http://localhost:8080/admin/login";
 
     public static final String GET_PRODUCTS_ENDPOINT = "d";
 
     public static final String PLACE_ORDER_ENDPOINT = "";
+
+    public static final String WEBSOCKET_ENDPOINT = "ws://127.0.0.1:"+WS_PORT;
 }

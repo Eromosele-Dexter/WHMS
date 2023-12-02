@@ -1,5 +1,8 @@
 package views.admin;
 
+import com.owlike.genson.Genson;
+import statics.HttpMethods;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,11 +12,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 
 import static statics.Endpoints.LOGIN_ENDPOINT;
 import static statics.ViewPages.PRODUCT_MANAGEMENT_PAGE;
@@ -81,41 +83,56 @@ public class LoginPage {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                String username = userText.getText();
-//
-//                String password = new String(passwordText.getPassword());
-//
-//                try {
-//                    URL url = new URL(LOGIN_ENDPOINT);
-//
-//                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//
-//                    conn.setRequestMethod("POST");
-//
-//                    conn.setDoOutput(true);
-//
-//                    String body = "username=" + username + "&password=" + password;
-//
-//                    OutputStream os = conn.getOutputStream();
-//
-//                    PrintStream ps = new PrintStream(os);
-//
-//                    ps.print(body);
-//
-//                    ps.close();
-//
-//                    if (conn.getResponseCode() == 200) {
-//                        // If login is successful, switch to the Products Management page else server would automatically disconnect
-//                        cardLayout.show(cardPanel, PRODUCT_MANAGEMENT_PAGE);
-//                    }
-//                } catch (IOException ex) {
-//                    ex.printStackTrace();
-//                    System.out.println("ex: " +ex);
-//                }
-                System.out.println("pressed");
-                cardLayout.show(cardPanel,PRODUCT_MANAGEMENT_PAGE);
+                String username = userText.getText();
+
+                String password = new String(passwordText.getPassword());
+
+                try {
+                    URL url = new URL(LOGIN_ENDPOINT);
+
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+                    conn.setRequestMethod(HttpMethods.POST);
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setRequestProperty("Cookie", "whms-session=yourCookieValue"); // Replace 'yourCookieValue' with the actual cookie value
+
+                    // Using Genson to create JSON
+                    Genson genson = new Genson();
+                    String jsonInputString = genson.serialize(Map.of("username", username, "password", password));
+
+                    try(OutputStream os = conn.getOutputStream()) {
+                        byte[] input = jsonInputString.getBytes("utf-8");
+                        os.write(input, 0, input.length);
+                    }
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            response.append(line);
+                        }
+                        reader.close();
+
+                        // Print the response
+                        System.out.println("Response: " + response.toString());
+
+                        // If login is successful, switch to the Products Management page
+                        cardLayout.show(cardPanel, PRODUCT_MANAGEMENT_PAGE);
+                    } else {
+                        System.out.println("Login failed: " + responseCode);
+                        // Additional error handling code here
+                    }
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    System.out.println("IOException: " + ex);
+                }
             }
         });
+
         return loginButton;
     }
 }

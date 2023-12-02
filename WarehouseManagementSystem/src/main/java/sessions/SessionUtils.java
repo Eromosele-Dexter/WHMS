@@ -28,13 +28,17 @@ public class SessionUtils {
         return session;
     }
 
-    public static void setClientCookie(HttpExchange exchange){
+    public static String generateRandomCookie(){
         UUID uuid = UUID.randomUUID();
 
-        // Convert the UUID to a string
-        String session = uuid.toString();
+       return uuid.toString();
+    }
 
-        exchange.getResponseHeaders().add("Set-Cookie", "whms-session=" + session);
+    public static void setClientCookie(HttpExchange exchange){
+
+        String cookie = generateRandomCookie();
+
+        exchange.getResponseHeaders().add("Set-Cookie", "whms-session=" + cookie);
 
         System.out.println("Cookie set");
     }
@@ -44,6 +48,7 @@ public class SessionUtils {
 
         String cookieHeader = handshake.getFieldValue("Cookie");
 
+        System.out.println("cookieHeader from Handshake: "+cookieHeader);
 
         if (cookieHeader != null && !cookieHeader.isEmpty()) {
 

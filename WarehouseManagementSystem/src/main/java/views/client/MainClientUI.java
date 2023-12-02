@@ -1,11 +1,13 @@
 package views.client;
 
-import views.admin.LoginPage;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 
-import static statics.ViewPages.LOGIN_PAGE;
+import static statics.Endpoints.WEBSOCKET_ENDPOINT;
 import static statics.ViewPages.ORDER_PAGE;
 
 public class MainClientUI extends JFrame{
@@ -35,6 +37,18 @@ public class MainClientUI extends JFrame{
     }
 
     public static void main(String[] args) {
+        HashMap<String, String> httpHeaders = new HashMap<>();
+        httpHeaders.put("Cookie", "whms-session=YourSessionToken");
+
+        WebsocketClientCustomer client = null;
+        try {
+            client = new WebsocketClientCustomer(new URI(WEBSOCKET_ENDPOINT), httpHeaders);
+        } catch (URISyntaxException e) {
+            System.out.println("Unable to establish connection to websocket server");
+            throw new RuntimeException(e);
+
+        }
+        client.connect();
         SwingUtilities.invokeLater(() -> {
             new MainClientUI();
         });
