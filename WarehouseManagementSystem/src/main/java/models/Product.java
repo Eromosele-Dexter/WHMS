@@ -16,7 +16,6 @@ public abstract class Product {
     protected State state;
 
 
-
     public Product(String productName, double unitPrice, int currentStockQuantity, int targetMaxStockQuantity, int targetMinStockQuantity, int restockSchedule, int discountStrategyId, String productType) {
         this.productName = productName;
         this.currentStockQuantity = currentStockQuantity;

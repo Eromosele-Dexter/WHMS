@@ -16,8 +16,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import static statics.Endpoints.GET_PRODUCTS_ENDPOINT;
-import static statics.Endpoints.PLACE_ORDER_ENDPOINT;
+
+import static statics.Endpoints.GET_PRODUCTS_ENDPOINT_URL;
+
 
 public class OrderPage {
     private CardLayout cardLayout;
@@ -33,7 +34,7 @@ public class OrderPage {
         List<String> products = new ArrayList<>();
 
         try {
-            URL url = new URL(GET_PRODUCTS_ENDPOINT);
+            URL url = new URL(GET_PRODUCTS_ENDPOINT_URL);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -67,13 +68,13 @@ public class OrderPage {
 
         JComboBox<String> productComboBox = new JComboBox<>(new String[]{"Product1", "Product2", "Product3", "Product4", "Product5"}); // Add your products here
 
-        selectionPanel.add(new JLabel("Step1 Choose Product: "));
+        selectionPanel.add(new JLabel("Step 1 Choose Product: "));
 
         selectionPanel.add(productComboBox);
 
         JComboBox<Integer> quantityComboBox = new JComboBox<>(new Integer[]{50, 100, 150, 200});
 
-        selectionPanel.add(new JLabel("Step2 Choose Quantity: "));
+        selectionPanel.add(new JLabel("Step 2 Choose Quantity: "));
 
         selectionPanel.add(quantityComboBox);
 

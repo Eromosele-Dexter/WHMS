@@ -1,6 +1,7 @@
 package utils;
 import apiContracts.Requests.Request;
 import com.owlike.genson.Genson;
+import com.owlike.genson.GensonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,7 +42,15 @@ public class JsonUtils {
     }
 
     public static String convertObjectToJson(Object object){
-        Genson genson = new Genson();
+        Genson genson = new GensonBuilder()
+                .useIndentation(true)
+                .create();
         return genson.serialize(object);
+    }
+
+    public static Object convertJsonStringToObject(String json, Object objectClass){
+        Genson genson = new Genson();
+        System.out.println("class: " + objectClass);
+        return genson.deserialize(json, objectClass.getClass());
     }
 }

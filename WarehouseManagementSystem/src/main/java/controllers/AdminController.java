@@ -10,6 +10,7 @@ import com.sun.net.httpserver.HttpServer;
 import databaseConnectors.SQLiteDbConnector;
 import repositories.adminRepo.AdminRepository;
 import services.AdminService;
+import sessions.SessionUtils;
 import statics.HttpMethods;
 import statics.Endpoints;
 import statics.StatusCodes;
@@ -43,6 +44,9 @@ public class AdminController implements HttpHandler {
 
                     LoginAdminResponse response = adminService.handleAdminLogin(request);
 
+                    String cookie = SessionUtils.getClientCookie(exchange);
+
+                    System.out.println("Admin Cookie: " + cookie);
 
                     if (response == null) {
                         new HttpResponse(exchange, "Error Logging In Administrator.", StatusCodes.BAD_REQUEST);

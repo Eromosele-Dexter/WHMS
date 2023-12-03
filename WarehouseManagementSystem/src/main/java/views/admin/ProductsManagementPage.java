@@ -1,33 +1,56 @@
 package views.admin;
 
+import com.owlike.genson.GenericType;
+import com.owlike.genson.Genson;
+import models.Product;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.json.impl.JSONArray;
+import org.jfree.data.json.impl.JSONObject;
+import statics.HttpMethods;
+import utils.JsonUtils;
+
 import javax.swing.*;
 import java.awt.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+
+import static statics.Endpoints.GET_PRODUCTS_ENDPOINT_URL;
 
 public class ProductsManagementPage {
 
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
+    private ArrayList<ProductResponse> productResponse;
+
+    private DefaultCategoryDataset dataset;
+
+    private OrderMessageResponse lastOrder;
+
     public ProductsManagementPage(CardLayout cardLayout, JPanel cardPanel){
         this.cardLayout = cardLayout;
         this.cardPanel = cardPanel;
     }
 
-    JPanel createProductsPage() {
+    public JPanel createProductsPage() {
         JPanel productsPanel = new JPanel(new BorderLayout()); // Use BorderLayout for layout
 
-        // Dummy data for the chart
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        dataset.addValue(100, "Product 1", "Product 1");
-        dataset.addValue(200, "Product 2", "Product 2");
-        dataset.addValue(150, "Product 3", "Product 3");
-        dataset.addValue(250, "Product 4", "Product 4");
-        dataset.addValue(175, "Product 5", "Product 5");
+        // Data for the chart
+        this.dataset = new DefaultCategoryDataset();
+
+        this.loadAllProducts(dataset);
 
         // Create the chart
         JFreeChart barChart = ChartFactory.createBarChart(
@@ -38,28 +61,137 @@ public class ProductsManagementPage {
                 PlotOrientation.VERTICAL,
                 true, true, false);
 
+        // Get the plot from the chart
+        CategoryPlot plot = barChart.getCategoryPlot();
+
+        // Get the renderer
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+
+        // Decrease the item margin (space between bars within a category)
+        renderer.setItemMargin(0.0);
+
+        // Get the domain axis (CategoryAxis) and adjust the category margin (space between categories)
+        CategoryAxis domainAxis = plot.getDomainAxis();
+
+        domainAxis.setCategoryMargin(0.1);
+
+        renderer.setMaximumBarWidth(0.25);
+
         // Create and add the chart panel
         ChartPanel chartPanel = new ChartPanel(barChart);
-        chartPanel.setPreferredSize(new Dimension(500, 300)); // Set preferred size for the chart
-        productsPanel.add(chartPanel, BorderLayout.WEST); // Add the chart to the left side
 
+        chartPanel.setPreferredSize(new Dimension(500, 300));
+
+        productsPanel.add(chartPanel, BorderLayout.CENTER);
 
         // Create the message board panel
-        JTextArea messageBoard = new JTextArea();
-
-        messageBoard.setEditable(false); // Make the text area non-editable
-
-        messageBoard.setText("Last Order\n=============\nProduct: Product2\nQuantity: 100\nTimestamp: 2023-10-02T12:26:53.06338\n\nCurrent Product Quantity in Warehouse\n=============\nProduct 1 ==> Quantity: 100\nProduct 2 ==> Quantity: 200\nProduct 3 ==> Quantity: 150\nProduct 4 ==> Quantity: 250\nProduct 5 ==> Quantity: 175");
-
-        messageBoard.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JTextArea messageBoard = getMessageBoard();
 
         JScrollPane scrollPane = new JScrollPane(messageBoard); // Allow scrolling
 
-        scrollPane.setPreferredSize(new Dimension(400, 300)); // Set preferred size for the message board
+        scrollPane.setPreferredSize(new Dimension(400, 300));
 
-        // Add the message board panel to the right side of the products panel
         productsPanel.add(scrollPane, BorderLayout.EAST);
 
         return productsPanel;
     }
+
+    private JTextArea getMessageBoard() {
+        JTextArea messageBoard = new JTextArea();
+
+        messageBoard.setEditable(false); // Make the text area non-editable
+
+        OrderMessageResponse ro = new OrderMessageResponse(); // TODO: remove line later
+
+        ro.setDate(new Date());
+
+        ro.setProductName("Apple TV");
+
+        ro.setCurrentStockQuantity(30);
+
+        messageBoard.setText(this.getLastOrderMessage(ro) + this.getProductsQuantityMessage());
+
+        messageBoard.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        return messageBoard;
+    }
+
+
+
+    private void loadAllProducts(DefaultCategoryDataset dataset){
+        try {
+            URL url = new URL(GET_PRODUCTS_ENDPOINT_URL);
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            con.setRequestMethod(HttpMethods.GET);
+
+            int status = con.getResponseCode();
+
+            if (status == HttpURLConnection.HTTP_OK) {
+
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+
+                String inputLine;
+                StringBuffer content = new StringBuffer();
+
+                while ((inputLine = in.readLine()) != null) {
+                    content.append(inputLine);
+                }
+
+                in.close();
+
+                Genson genson = new Genson();
+                this.productResponse = genson.deserialize(content.toString(), new GenericType<ArrayList<ProductResponse>>() {});
+
+                ArrayList<ProductResponse>products = this.productResponse;
+
+
+                for (int i = 0; i < products.size(); i++) {
+
+                   ProductResponse product = products.get(i);
+
+                    String name = product.getProductName();
+
+                    int quantity = product.getCurrentStockQuantity();
+
+                    dataset.addValue(quantity, name, name);
+                }
+
+            } else {
+                // Handle non-OK response
+                System.out.println("Error: API request failed with status code " + status);
+            }
+            con.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getProductsQuantityMessage(){
+        String result = "Current Product Quantity in Warehouse\n=============\n\n";
+
+        for(int i=0; i< this.productResponse.size();i++) {
+            ProductResponse product = this.productResponse.get(i);
+
+            result += String.format("%s ==> Quantity: %d\n\n", product.getProductName(), product.getCurrentStockQuantity());
+        }
+        return result;
+    }
+
+    private String getLastOrderMessage(OrderMessageResponse lastOrder){
+        String result = "Last Order\n=============\n\n";
+
+        result += String.format("Product: %s\n\nQuantity: %d\n\nTimestamp: %s\n\n\n",
+                        lastOrder.getProductName(), lastOrder.getCurrentStockQuantity(), this.formatDateTime(lastOrder.getDate()));
+
+        return result;
+    }
+
+    private String formatDateTime(Date date) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        return formatter.format(date);
+    }
+
+
 }

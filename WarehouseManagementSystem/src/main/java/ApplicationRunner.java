@@ -1,5 +1,5 @@
 
-//    Server, MainServerUI, MainClientUI
+
 import java.io.IOException;
 
 public class ApplicationRunner {
@@ -18,10 +18,10 @@ public class ApplicationRunner {
         new Thread(() -> views.admin.MainServerUI.main(new String[]{})).start();
 
         // Start client 1
-        new Thread(() -> views.client.MainClientUI.main(new String[]{})).start();
+        new Thread(() -> views.client.MainClientUI.main(new String[]{"1"})).start();
 
         // Start client 2
-        new Thread(() -> views.client.MainClientUI.main(new String[]{})).start();
+        new Thread(() -> views.client.MainClientUI.main(new String[]{"2"})).start();
     }
 }
 

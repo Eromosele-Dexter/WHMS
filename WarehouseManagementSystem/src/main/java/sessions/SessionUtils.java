@@ -2,10 +2,13 @@ package sessions;
 
 import com.sun.net.httpserver.HttpExchange;
 import org.java_websocket.handshake.ClientHandshake;
+import statics.SessionKeys;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static statics.SessionKeys.WHMS_SESSION_NAME;
 
 public class SessionUtils {
 
@@ -17,14 +20,18 @@ public class SessionUtils {
 
         // Check if the "session" cookie exists
         String session = null;
-        if (cookies != null) {
-            for (String cookie : cookies) {
-                if (cookie.startsWith("whms-session=")) {
-                    session = cookie;
-                    break;
-                }
+
+        if (cookies == null) {
+            return null;
+        }
+
+        for (String cookie : cookies) {
+            if (cookie.startsWith(WHMS_SESSION_NAME + "=")) {
+                session = cookie.split("=", 2)[1].trim();
+                break;
             }
         }
+
         return session;
     }
 
@@ -38,7 +45,7 @@ public class SessionUtils {
 
         String cookie = generateRandomCookie();
 
-        exchange.getResponseHeaders().add("Set-Cookie", "whms-session=" + cookie);
+        exchange.getResponseHeaders().add("Set-Cookie", WHMS_SESSION_NAME + "=" + cookie);
 
         System.out.println("Cookie set");
     }
@@ -58,9 +65,9 @@ public class SessionUtils {
 
                 String[] cookiePair = cookie.split("=", 2);
 
-                if (cookiePair.length == 2 && "whms-session".equals(cookiePair[0].trim())) {
+                if (cookiePair.length == 2 && WHMS_SESSION_NAME.equals(cookiePair[0].trim())) {
 
-                    return cookiePair[1].trim(); // Return the value of the 'whms-session' cookie
+                    return cookiePair[1].trim();
 
                 }
             }
