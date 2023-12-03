@@ -1,7 +1,7 @@
 package factories.productFactories;
 
-import models.Furniture;
-import models.Product;
+import models.products.Furniture;
+import models.products.Product;
 
 public class FurnitureFactory extends ProductFactory{
 

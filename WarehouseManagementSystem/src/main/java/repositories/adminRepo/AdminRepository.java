@@ -1,12 +1,10 @@
 package repositories.adminRepo;
 
 import databaseConnectors.IDatabaseConnector;
-import models.Administrator;
+import models.admin.Administrator;
 import statics.DbConfig;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import static statics.DbQueries.*;
 

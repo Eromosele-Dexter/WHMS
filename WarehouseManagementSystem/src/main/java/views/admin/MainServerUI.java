@@ -16,6 +16,8 @@ public class MainServerUI extends JFrame{
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
+    private ProductsManagementPage productsManagementPage;
+
     public MainServerUI() {
         setTitle("Warehouse Management System - Admin View");
 
@@ -42,14 +44,15 @@ public class MainServerUI extends JFrame{
         cardPanel.add(signupPage.createSignupPage(), SIGNUP_PAGE);
 
         // Create and add the products management page
-        ProductsManagementPage productsManagementPage = new ProductsManagementPage(cardLayout, cardPanel);
+        this.productsManagementPage = new ProductsManagementPage(cardLayout, cardPanel);
 
         cardPanel.add(productsManagementPage.createProductsPage(), PRODUCT_MANAGEMENT_PAGE);
+
+        initializeWebSocketClient();
 
         add(cardPanel, BorderLayout.CENTER);
 
         setLocationRelativeTo(null);
-
 
         setLocation(0,0);
 
@@ -57,7 +60,8 @@ public class MainServerUI extends JFrame{
 
     }
 
-    public static void main(String[] args) {
+
+    private void initializeWebSocketClient() {
         HashMap<String, String> httpHeaders = new HashMap<>();
 
         httpHeaders.put("Cookie", WHMS_SESSION_NAME + "=" + ADMIN_COOKIE);
@@ -68,15 +72,19 @@ public class MainServerUI extends JFrame{
 
             client = new WebsocketClientAdmin(new URI(WEBSOCKET_ENDPOINT), httpHeaders);
 
+            client.connect();
+
+            productsManagementPage.setWebSocketClient(client);
+
         } catch (URISyntaxException e) {
 
             System.out.println("Unable to establish connection to websocket server");
 
             throw new RuntimeException(e);
-
         }
-        client.connect();
+    }
 
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new MainServerUI();
         });

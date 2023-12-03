@@ -1,6 +1,6 @@
 package repositories.adminRepo;
 
-import models.Administrator;
+import models.admin.Administrator;
 
 public interface IAdminRepository {
     public Administrator createAdministrator(Administrator administrator);

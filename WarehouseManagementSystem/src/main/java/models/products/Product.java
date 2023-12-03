@@ -1,4 +1,4 @@
-package models;
+package models.products;
 
 import productStates.RegularStockState;
 import productStates.State;

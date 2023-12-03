@@ -1,15 +1,11 @@
 package controllers;
 
-import apiContracts.Requests.AddProductRequest;
-import apiContracts.Requests.GetProductRequest;
 import apiContracts.Requests.PlaceOrderRequest;
-import apiContracts.Responses.AddProductResponse;
-import apiContracts.Responses.GetProductResponse;
 import apiContracts.Responses.PlaceOrderResponse;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import databaseConnectors.SQLiteDbConnector;
-import models.Order;
+import models.order.Order;
 import repositories.productRepo.ProductRepository;
 import services.OrderService;
 import services.ProductService;
@@ -22,8 +18,6 @@ import utils.JsonUtils;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class OrderController implements HttpHandler {
 
@@ -51,12 +45,6 @@ public class OrderController implements HttpHandler {
 
                     System.out.println("Cookie: " + cookie);
 
-//                    if(cookie == null) {
-//                        SessionUtils.setClientCookie(exchange);
-//                        cookie = SessionUtils.getClientCookie(exchange);
-//                    }
-
-
                     PlaceOrderRequest request = (PlaceOrderRequest) JsonUtils.mapJsonToRequest(json, new PlaceOrderRequest());
 
                     PlaceOrderResponse response  = orderService.handlePlaceOrder(request, new Date(), cookie);
@@ -64,8 +52,6 @@ public class OrderController implements HttpHandler {
                     if(response != null) {
                         lastOrder = response.getPlacedOrder();
                     }
-
-//TODO:                    Order is received for Product X and Quantity Y”
 
                     if (response == null) {
                         new HttpResponse(exchange, "Error Placing Order for " + request.getProductName() + " with quantity: " + request.getQuantity(), StatusCodes.BAD_REQUEST);

@@ -2,6 +2,7 @@ package views.client;
 
 
 import sessions.SessionUtils;
+import views.admin.ProductsManagementPage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,13 +18,15 @@ public class MainClientUI extends JFrame{
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
+    private OrderPage orderPage;
 
-    public MainClientUI(String number, String cookie) {
+
+    public MainClientUI(String number, String cookie, HashMap<String, String> httpHeaders) {
         setTitle("Warehouse Management System - Client View " + number);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setSize(535, 410);
+        setSize(650, 410);
 
         setLayout(new BorderLayout());
 
@@ -36,10 +39,11 @@ public class MainClientUI extends JFrame{
         cardPanel.setLayout(cardLayout);
 
         // Create and add the order page
-        OrderPage orderPage = new OrderPage(cardLayout,cardPanel, cookie);
+        this.orderPage = new OrderPage(cardLayout,cardPanel, cookie);
 
         cardPanel.add(orderPage.createOrderPage(), ORDER_PAGE);
 
+        initializeWebSocketClient(httpHeaders);
 
         add(cardPanel, BorderLayout.CENTER);
 
@@ -54,19 +58,16 @@ public class MainClientUI extends JFrame{
         setVisible(true);
     }
 
-    public static void main(String[] args) {
-
-        HashMap<String, String> httpHeaders = new HashMap<>();
-
-        String cookie = WHMS_SESSION_NAME + "=" + SessionUtils.generateRandomCookie();
-
-        httpHeaders.put("Cookie", cookie);
-
+    private void initializeWebSocketClient(HashMap<String, String> httpHeaders) {
         WebsocketClientCustomer client = null;
 
         try {
 
             client = new WebsocketClientCustomer(new URI(WEBSOCKET_ENDPOINT), httpHeaders);
+
+            client.connect();
+
+            orderPage.setWebSocketClient(client);
 
         } catch (URISyntaxException e) {
 
@@ -75,10 +76,20 @@ public class MainClientUI extends JFrame{
             throw new RuntimeException(e);
 
         }
-        client.connect();
+
+    }
+
+
+    public static void main(String[] args) {
+
+        HashMap<String, String> httpHeaders = new HashMap<>();
+
+        String cookie = WHMS_SESSION_NAME + "=" + SessionUtils.generateRandomCookie();
+
+        httpHeaders.put("Cookie", cookie);
 
         SwingUtilities.invokeLater(() -> {
-            new MainClientUI(args[0], cookie);
+            new MainClientUI(args[0], cookie, httpHeaders);
         });
     }
 }

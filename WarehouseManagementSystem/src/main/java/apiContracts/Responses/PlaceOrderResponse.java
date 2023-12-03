@@ -1,6 +1,6 @@
 package apiContracts.Responses;
 
-import models.Order;
+import models.order.Order;
 import utils.JsonUtils;
 
 public class PlaceOrderResponse {

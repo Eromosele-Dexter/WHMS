@@ -8,8 +8,9 @@ import factories.productFactories.ElectronicFactory;
 import factories.productFactories.FurnitureFactory;
 import factories.productFactories.GeneralFactory;
 import factories.productFactories.ProductFactory;
-import models.Product;
+import models.products.Product;
 import repositories.productRepo.IProductRepository;
+import statics.factoryKeys;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,11 +29,11 @@ public class ProductService {
 
         productsFactoryMap = new HashMap<>();
 
-        productsFactoryMap.put("electronic", new ElectronicFactory());
+        productsFactoryMap.put(factoryKeys.ELECTRONIC, new ElectronicFactory());
 
-        productsFactoryMap.put("furniture", new FurnitureFactory());
+        productsFactoryMap.put(factoryKeys.FURNITURE, new FurnitureFactory());
 
-        productsFactoryMap.put("general", new GeneralFactory());
+        productsFactoryMap.put(factoryKeys.GENERAL, new GeneralFactory());
 
     }
 
@@ -43,7 +44,7 @@ public class ProductService {
         }
 
         if(addProductRequest.getProductType() == null){
-            addProductRequest.setProductType("general");
+            addProductRequest.setProductType(factoryKeys.GENERAL);
         }
 
         String productName = addProductRequest.getProductName();
@@ -70,8 +71,6 @@ public class ProductService {
 
 
         Product createdProduct = this.productRepository.addProduct(product);
-
-        System.out.println("looo");
 
         return createdProduct == null ? null : new AddProductResponse(createdProduct.getProductId(), createdProduct.getProductName(),
                 createdProduct.getUnitPrice(), createdProduct.getCurrentStockQuantity(), createdProduct.getTargetMaxStockQuantity(),

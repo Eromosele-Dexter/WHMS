@@ -4,6 +4,7 @@ import com.owlike.genson.GenericType;
 import com.owlike.genson.Genson;
 import statics.HttpMethods;
 import statics.StatusCodes;
+import statics.messageTopics;
 import views.admin.ProductResponse;
 
 import javax.swing.*;
@@ -18,6 +19,7 @@ import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,8 @@ public class OrderPage {
     private JPanel cardPanel;
 
     private String cookie;
+
+    private JTextArea orderDetailsTextArea;
 
 
     public OrderPage(CardLayout cardLayout, JPanel cardPanel, String cookie){
@@ -69,7 +73,7 @@ public class OrderPage {
         orderPanel.add(selectionPanel, BorderLayout.NORTH);
 
         // Message board at the bottom
-        JTextArea orderDetailsTextArea = new JTextArea();
+         this.orderDetailsTextArea = new JTextArea();
 
         orderDetailsTextArea.setEditable(false); // Make text area non-editable
 
@@ -212,4 +216,23 @@ public class OrderPage {
 
     }
 
+    public void setWebSocketClient(WebsocketClientCustomer client) {
+        client.setOrdersPage(this);
+    }
+
+    public void updateMessageBoard(HashMap<String, Object> messageObject) {
+        String newMessage = "New Message";
+
+        if (messageObject.get("topic").equals(messageTopics.GENERAL)) {
+            var generalResponseData = messageObject.get("data");
+
+            if(generalResponseData instanceof String){
+                newMessage = ((String) generalResponseData ) + "\n";
+            }
+        }
+
+        String existingText = this.orderDetailsTextArea.getText();
+
+        this.orderDetailsTextArea.setText(newMessage + "\n\n" + existingText);
+    }
 }

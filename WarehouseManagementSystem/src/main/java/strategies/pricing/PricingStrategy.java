@@ -1,7 +1,7 @@
 package strategies.pricing;
 
-import models.Order;
-import models.Product;
+import models.order.Order;
+import models.products.Product;
 
 public abstract class PricingStrategy {
 

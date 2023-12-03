@@ -3,11 +3,16 @@ package services;
 import apiContracts.Requests.PlaceOrderRequest;
 import apiContracts.Responses.PlaceOrderResponse;
 import controllers.WebsocketController;
-import models.Order;
-import models.Product;
+import factories.messageFactories.*;
+import factories.productFactories.ProductFactory;
+import models.messages.Message;
+import models.order.Order;
+import models.products.Product;
 import productStates.LowStockState;
 import productStates.RegularStockState;
 import productStates.RestockingToFulfillOrderState;
+import statics.factoryKeys;
+import statics.messageTopics;
 import strategies.pricing.PricingStrategy;
 import strategies.pricing.PricingStrategy001;
 import strategies.pricing.PricingStrategy002;
@@ -20,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static statics.Endpoints.WS_PORT;
+import static statics.SessionKeys.ADMIN_COOKIE;
 
 public class OrderService {
 
@@ -36,6 +42,8 @@ public class OrderService {
     private List<IRestockOperationStrategy> restockOperationStrategies;
 
     private WebsocketController wsController;
+
+    private Map<String, MessageFactory> messageFactoryMap;
 
     public OrderService(ProductService productService) {
         this.productService = productService;
@@ -55,28 +63,59 @@ public class OrderService {
         InetSocketAddress address = new InetSocketAddress(WS_PORT);
 
         wsController = WebsocketController.getInstance(address);
+
+        this.messageFactoryMap = new HashMap<>();
+
+        this.messageFactoryMap.put(factoryKeys.CURRENT_STOCK_FACTORY, new CurrentStockMessageFactory());
+
+        this.messageFactoryMap.put(factoryKeys.GENERAL_ORDER_FACTORY, new GeneralOrderMessageFactory());
+
+        this.messageFactoryMap.put(factoryKeys.LAST_ORDER_FACTORY, new LastOrderMessageFactory());
+
+        this.messageFactoryMap.put(factoryKeys.RESTOCK_FACTORY, new RestockMessageFactory());
     }
 
 
-    public PlaceOrderResponse handlePlaceOrder(PlaceOrderRequest request, Date date, String cookie){
-        Order placedOrder = new Order(request.getProductName(), request.getQuantity(), date, cookie);
+    public PlaceOrderResponse handlePlaceOrder(PlaceOrderRequest request, Date date, String clientCookie){
+
+        String productName = request.getProductName();
+
+        int requestedQuantity = request.getQuantity();
+
+        MessageFactory messageFactory = this.messageFactoryMap.get(factoryKeys.GENERAL_ORDER_FACTORY);
+
+        Message orderSentMessage = messageFactory.createMessage(messageTopics.GENERAL, String.format("Order for Product %s, Quantity %d is sent", productName, requestedQuantity));
+
+        sendMessage(orderSentMessage.toString(), clientCookie);
+
+        Order placedOrder = new Order(productName, requestedQuantity, date, clientCookie);
 
         Product orderedProduct = this.productService.handleGetProduct(placedOrder.getProductName());
+
+        messageFactory = this.messageFactoryMap.get(factoryKeys.GENERAL_ORDER_FACTORY);
+
+        Message orderRecievedMessage = messageFactory.createMessage(messageTopics.GENERAL, String.format("Order is received for Product %s and Quantity %d", productName, requestedQuantity));
+
+        sendMessage(orderRecievedMessage.toString(), ADMIN_COOKIE);
 
         if(placedOrder.getQuantity() > orderedProduct.getTargetMaxStockQuantity()){
 
             PlaceOrderResponse placeOrderResponse = new PlaceOrderResponse(placedOrder,"Order processed.");
 
-            sendMessage("Order exceeds the max quantity set for this product: "+ placedOrder.getProductName() + " and cannot be processed");
+            messageFactory = this.messageFactoryMap.get(factoryKeys.GENERAL_ORDER_FACTORY);
+
+            Message orderExceedsMessage = messageFactory.createMessage(messageTopics.GENERAL, String.format("Order for Product %s Quantity %d exceeds the max quantity set for this product and cannot be processed",
+                    placedOrder.getProductName(), placedOrder.getQuantity()));
+
+
+            sendMessage(orderExceedsMessage.toString(), ADMIN_COOKIE);
+
+            sendMessage(orderExceedsMessage.toString(), clientCookie);
 
             return placeOrderResponse;
         }
 
         orders.add(placedOrder);
-
-        System.out.println("order placed");
-
-//        sendMessage("Hiii Admin");
 
         return handleProcessOrder();
     }
@@ -89,11 +128,13 @@ public class OrderService {
 
         PlaceOrderResponse placeOrderResponse = null;
 
-        String restockingOperationInitiatedMessage = String.format("Restocking Operation for Product %s initiated",
-                placedOrder.getProductName());
+        MessageFactory messageFactory = this.messageFactoryMap.get(factoryKeys.RESTOCK_FACTORY);
 
-        String restockingOperationCompletedMessage = String.format("Restocking Operation for Product %s completed",
-                placedOrder.getProductName());
+        Message restockingOperationInitiatedMessage  = messageFactory.createMessage(messageTopics.RESTOCK, String.format("Restocking Operation for Product %s initiated",
+                placedOrder.getProductName()));
+
+        Message restockingOperationCompletedMessage  = messageFactory.createMessage(messageTopics.RESTOCK, String.format("Restocking Operation for Product %s completed",
+                placedOrder.getProductName()));
 
         int randomRestockStrategyIndex = getRandomNumber(0, this.restockOperationStrategies.size()-1);
 
@@ -103,16 +144,18 @@ public class OrderService {
 
         if(placedOrder.getQuantity() > orderedProduct.getCurrentStockQuantity()) {
 
-            String orderExceedsAvailableMessage = String.format("Order for Product %s Quantity %d is  pending – order exceeds available quantity",
-                    placedOrder.getProductName(), quantityRequested);
+            messageFactory = this.messageFactoryMap.get(factoryKeys.GENERAL_ORDER_FACTORY);
 
-            sendMessage(orderExceedsAvailableMessage);
+            Message orderExceedsAvailableMessage = messageFactory.createMessage(messageTopics.GENERAL, String.format("Order for Product %s Quantity %d is  pending – order exceeds available quantity",
+                    placedOrder.getProductName(), quantityRequested));
 
-            sendMessage(restockingOperationInitiatedMessage);
+            sendMessage(orderExceedsAvailableMessage.toString(), placedOrder.getClientCookie());
+
+            sendMessage(restockingOperationInitiatedMessage.toString(), placedOrder.getClientCookie());
 
             restockStrategy.restock(this.productService, orderedProduct);
 
-            sendMessage(restockingOperationCompletedMessage);
+            sendMessage(restockingOperationCompletedMessage.toString(), placedOrder.getClientCookie());
         }
 
         int currentQuantity = this.productService.handleGetProduct(placedOrder.getProductName()).getCurrentStockQuantity();
@@ -132,12 +175,26 @@ public class OrderService {
         double totalPrice = pricingStrategy.priceProduct(placedOrder, orderedProduct);
 
 
-        String orderFinalizedMessage = String.format("Order is finalized for Product %s and Quantity %d with total price %.2f",
-                placedOrder.getProductName(), placedOrder.getQuantity(), totalPrice);
+        messageFactory = this.messageFactoryMap.get(factoryKeys.GENERAL_ORDER_FACTORY);
 
-        sendMessage(orderFinalizedMessage);
+        Message orderFinalizedMessage = messageFactory.createMessage(messageTopics.GENERAL, String.format("Order is finalized for Product %s and Quantity %d with total price %.2f",
+                placedOrder.getProductName(), placedOrder.getQuantity(), totalPrice));
+
+        sendMessage(orderFinalizedMessage.toString(), placedOrder.getClientCookie());
+
+        messageFactory = this.messageFactoryMap.get(factoryKeys.LAST_ORDER_FACTORY);
+
+        Message lastOrderMessage = messageFactory.createMessage(messageTopics.LAST_ORDER, placedOrder);
+
+        sendMessage(lastOrderMessage.toString(), ADMIN_COOKIE);
 
         Product productAfterFulfilled = this.productService.handleGetProduct(placedOrder.getProductName());
+
+        messageFactory = this.messageFactoryMap.get(factoryKeys.CURRENT_STOCK_FACTORY);
+
+        Message currentStockUpdateMessage = messageFactory.createMessage(messageTopics.UPDATED_CURRENT_STOCK,this.productService.handleRetrieveAllProducts());
+
+        sendMessage(currentStockUpdateMessage.toString(), ADMIN_COOKIE);
 
         if(productAfterFulfilled.getCurrentStockQuantity() < productAfterFulfilled.getTargetMinStockQuantity()) {
 
@@ -146,8 +203,12 @@ public class OrderService {
             restockAfterFulfilled(productAfterFulfilled);
         }
 
+        currentStockUpdateMessage = messageFactory.createMessage(messageTopics.UPDATED_CURRENT_STOCK,this.productService.handleRetrieveAllProducts());
+
+        sendMessage(currentStockUpdateMessage.toString(), ADMIN_COOKIE);
 
         placeOrderResponse = new PlaceOrderResponse(placedOrder, "ok");
+
 
         return placeOrderResponse;
     }
@@ -173,32 +234,33 @@ public class OrderService {
         return rand.nextInt((max - min) + 1) + min;
     }
 
-    private void sendMessage(String message){
-        System.out.println(message);
-        wsController.sendMessageToClient(message, "admin");
-    }
+//    private void sendMessage(String message){
+//        System.out.println(message);
+//        wsController.sendMessageToClient(message, ADMIN_COOKIE);
+//    }
 
-    private void sendMessage(String message, String client){
-        wsController.sendMessageToClient(message, client);
+    private void sendMessage(String message, String wsClient){
+        wsController.sendMessageToClient(message, wsClient);
     }
 
     private void restockAfterFulfilled(Product product){
 
-        System.out.println("Restock after fulfilled");
+        MessageFactory messageFactory = this.messageFactoryMap.get(factoryKeys.RESTOCK_FACTORY);
 
-        String restockingOperationInitiatedMessage = String.format("Restocking Operation for Product %s initiated",
-                product.getProductName());
+        Message restockingOperationInitiatedMessage  = messageFactory.createMessage(messageTopics.RESTOCK, String.format("Restocking Operation for Product %s initiated",
+                product.getProductName()));
 
-        String restockingOperationCompletedMessage = String.format("Restocking Operation for Product %s completed",
-                product.getProductName());
+        Message restockingOperationCompletedMessage  = messageFactory.createMessage(messageTopics.RESTOCK, String.format("Restocking Operation for Product %s completed",
+                product.getProductName()));
 
-        sendMessage(restockingOperationInitiatedMessage);
+
+        sendMessage(restockingOperationInitiatedMessage.toString(), ADMIN_COOKIE);
 
         product.setState(new RestockingToFulfillOrderState());
 
         restockStrategy.restock(this.productService, product);
 
-        sendMessage(restockingOperationCompletedMessage);
+        sendMessage(restockingOperationCompletedMessage.toString(), ADMIN_COOKIE);
 
         product.setState(new RegularStockState());
 

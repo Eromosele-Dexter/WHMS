@@ -1,4 +1,4 @@
-package models;
+package models.admin;
 
 public class Administrator {
 

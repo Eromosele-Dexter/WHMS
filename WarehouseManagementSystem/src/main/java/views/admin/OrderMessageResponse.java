@@ -8,6 +8,13 @@ public class OrderMessageResponse {
 
     private Date date;
 
+    public OrderMessageResponse(){}
+    public OrderMessageResponse(String productName, int currentStockQuantity, Date date) {
+        this.productName = productName;
+        this.currentStockQuantity = currentStockQuantity;
+        this.date = date;
+    }
+
     public String getProductName() {
         return productName;
     }

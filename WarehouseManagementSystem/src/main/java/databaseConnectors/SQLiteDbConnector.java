@@ -42,7 +42,7 @@ public class SQLiteDbConnector implements IDatabaseConnector {
             // Create a connection to the database
             connection = DriverManager.getConnection(connectionString);
 
-            System.out.println("Connection to SQLite has been established.");
+//            System.out.println("Connection to SQLite has been established.");
 
         } catch (ClassNotFoundException | SQLException e) {
             System.out.println(e.getMessage());

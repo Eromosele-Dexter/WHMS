@@ -1,6 +1,6 @@
 package factories.productFactories;
 
-import models.Product;
+import models.products.Product;
 
 public abstract class ProductFactory {
 

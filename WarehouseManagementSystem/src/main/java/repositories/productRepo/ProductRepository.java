@@ -5,7 +5,7 @@ import factories.productFactories.ElectronicFactory;
 import factories.productFactories.FurnitureFactory;
 import factories.productFactories.GeneralFactory;
 import factories.productFactories.ProductFactory;
-import models.Product;
+import models.products.Product;
 import statics.DbConfig;
 
 import java.sql.Connection;

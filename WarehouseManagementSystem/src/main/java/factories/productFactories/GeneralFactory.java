@@ -1,8 +1,7 @@
 package factories.productFactories;
 
-import models.Electronic;
-import models.General;
-import models.Product;
+import models.products.General;
+import models.products.Product;
 
 public class GeneralFactory extends ProductFactory{
     /**

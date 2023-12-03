@@ -50,7 +50,9 @@ public class WebsocketController extends WebSocketServer {
 
     public void sendMessageToClient(String message, String clientId) {
         WebSocket conn = clientConnections.get(clientId);
+        System.out.println("Client id: " + clientId);
         if (conn != null) {
+            System.out.println("Sending message to admin on WS");
             conn.send(message);
         }
     }

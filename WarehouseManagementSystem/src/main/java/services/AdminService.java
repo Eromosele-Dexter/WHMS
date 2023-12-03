@@ -4,7 +4,7 @@ import apiContracts.Requests.LoginAdminRequest;
 import apiContracts.Requests.RegisterAdminRequest;
 import apiContracts.Responses.LoginAdminResponse;
 import apiContracts.Responses.RegisterAdminResponse;
-import models.Administrator;
+import models.admin.Administrator;
 import repositories.adminRepo.IAdminRepository;
 
 public class AdminService {
