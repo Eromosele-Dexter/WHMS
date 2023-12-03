@@ -15,13 +15,8 @@ public class ApplicationRunner {
         }).start();
 
         // Start admin
-        new Thread(() -> views.admin.MainServerUI.main(new String[]{})).start();
-
-        // Start client 1
-        new Thread(() -> views.client.MainClientUI.main(new String[]{"1"})).start();
-
-        // Start client 2
-        new Thread(() -> views.client.MainClientUI.main(new String[]{"2"})).start();
+        new Thread(() -> views.admin.MainServerUI.main(new String[]{}))
+                .start();
     }
 }
 

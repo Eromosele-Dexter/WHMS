@@ -156,7 +156,7 @@ public class LoginPage {
                         // If login is successful, switch to the Products Management page
                         cardLayout.show(cardPanel, PRODUCT_MANAGEMENT_PAGE);
                     } else {
-                        errorLabel.setText("Wrong admin credentials, try again");
+                        errorLabel.setText("Wrong admin credentials. \nServer has Stopped. \nRestart the application.");
 
                         errorLabel.setVisible(true);
 

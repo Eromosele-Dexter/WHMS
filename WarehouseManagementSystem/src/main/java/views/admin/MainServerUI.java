@@ -85,11 +85,14 @@ public class MainServerUI extends JFrame{
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new MainServerUI();
-        });
+
+            SwingUtilities.invokeLater(() -> {
+                new MainServerUI();
+            });
 
     }
+
+
 
 
 }

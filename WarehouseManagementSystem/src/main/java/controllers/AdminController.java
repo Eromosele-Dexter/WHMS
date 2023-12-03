@@ -16,6 +16,7 @@ import statics.Endpoints;
 import statics.StatusCodes;
 import utils.HttpResponse;
 import utils.JsonUtils;
+import views.admin.MainServerUI;
 
 import java.io.IOException;
 
@@ -50,10 +51,16 @@ public class AdminController implements HttpHandler {
 
                     if (response == null) {
                         new HttpResponse(exchange, "Error Logging In Administrator.", StatusCodes.BAD_REQUEST);
-//                        server.stop(3);
+                        server.stop(3);
                     }
-                    else
+                    else {
                         new HttpResponse(exchange, response, StatusCodes.OK);
+                        // Start client 1
+                        new Thread(() -> views.client.MainClientUI.main(new String[]{"1"})).start();
+
+                        // Start client 2
+                        new Thread(() -> views.client.MainClientUI.main(new String[]{"2"})).start();
+                    }
                 }
 
                 else if((Endpoints.ADMIN_ENDPOINT + "/register").equals(requestURI)){
