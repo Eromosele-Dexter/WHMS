@@ -1,6 +1,8 @@
 package views.client;
 
 
+import sessions.SessionUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
@@ -15,7 +17,8 @@ public class MainClientUI extends JFrame{
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
-    public MainClientUI(String number) {
+
+    public MainClientUI(String number, String cookie) {
         setTitle("Warehouse Management System - Client View " + number);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -33,7 +36,7 @@ public class MainClientUI extends JFrame{
         cardPanel.setLayout(cardLayout);
 
         // Create and add the order page
-        OrderPage orderPage = new OrderPage(cardLayout,cardPanel);
+        OrderPage orderPage = new OrderPage(cardLayout,cardPanel, cookie);
 
         cardPanel.add(orderPage.createOrderPage(), ORDER_PAGE);
 
@@ -55,7 +58,9 @@ public class MainClientUI extends JFrame{
 
         HashMap<String, String> httpHeaders = new HashMap<>();
 
-        httpHeaders.put("Cookie", WHMS_SESSION_NAME +"=YourSessionToken");
+        String cookie = WHMS_SESSION_NAME + "=" + SessionUtils.generateRandomCookie();
+
+        httpHeaders.put("Cookie", cookie);
 
         WebsocketClientCustomer client = null;
 
@@ -73,7 +78,7 @@ public class MainClientUI extends JFrame{
         client.connect();
 
         SwingUtilities.invokeLater(() -> {
-            new MainClientUI(args[0]);
+            new MainClientUI(args[0], cookie);
         });
     }
 }

@@ -41,13 +41,12 @@ public class SessionUtils {
        return uuid.toString();
     }
 
-    public static void setClientCookie(HttpExchange exchange){
+    public static void setClientCookie(HttpExchange exchange) {
 
         String cookie = generateRandomCookie();
 
         exchange.getResponseHeaders().add("Set-Cookie", WHMS_SESSION_NAME + "=" + cookie);
 
-        System.out.println("Cookie set");
     }
 
     public static String getClientCookieFromHandshake(ClientHandshake handshake){

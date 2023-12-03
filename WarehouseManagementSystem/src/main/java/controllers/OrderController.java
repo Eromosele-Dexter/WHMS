@@ -51,10 +51,10 @@ public class OrderController implements HttpHandler {
 
                     System.out.println("Cookie: " + cookie);
 
-                    if(cookie == null) {
-                        SessionUtils.setClientCookie(exchange);
-                        cookie = SessionUtils.getClientCookie(exchange);
-                    }
+//                    if(cookie == null) {
+//                        SessionUtils.setClientCookie(exchange);
+//                        cookie = SessionUtils.getClientCookie(exchange);
+//                    }
 
 
                     PlaceOrderRequest request = (PlaceOrderRequest) JsonUtils.mapJsonToRequest(json, new PlaceOrderRequest());
